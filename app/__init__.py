@@ -3,14 +3,18 @@ from supabase import create_client, Client
 import os
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     app.config['SUPABASE_URL'] = os.environ.get('SUPABASE_URL', 'https://wnbmaltublivkfiwzltq.supabase.co')
     app.config['SUPABASE_KEY'] = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduYm1hbHR1YmxpdmtmaXd6bHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MDY1OTIsImV4cCI6MjA4MDM4MjU5Mn0.BtBp9gRhWO9Jxkmnn1fMy6M4z_A2i3xZpjd76jHV0ms')
     
     # Initialize Supabase client
-    supabase: Client = create_client(app.config['SUPABASE_URL'], app.config['SUPABASE_KEY'])
-    app.supabase = supabase
+    try:
+        supabase: Client = create_client(app.config['SUPABASE_URL'], app.config['SUPABASE_KEY'])
+        app.supabase = supabase
+    except Exception as e:
+        print(f"Warning: Supabase initialization error: {e}")
+        app.supabase = None
     
     # Register blueprints
     from app.routes.auth import auth_bp
