@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container admin-dashboard">
+    <div class="dashboard-header">
+        <h1><i class="fas fa-user-shield"></i> System Admin Dashboard</h1>
+    </div>
+    
+    <div class="dashboard-stats">
+        <div class="stat-card">
+            <h3>Total Users</h3>
+            <p class="stat-number">{{ users_count }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Reports</h3>
+            <p class="stat-number">{{ reports_count }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Cases</h3>
+            <p class="stat-number">{{ cases_count }}</p>
+        </div>
+    </div>
+    
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <h3><i class="fas fa-users"></i> User Management</h3>
+            <p>Manage all system users</p>
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-primary">Manage Users</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-chart-bar"></i> Report Analytics</h3>
+            <p>View comprehensive analytics</p>
+            <a href="{{ url_for('admin.analytics') }}" class="btn btn-primary">View Analytics</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-cog"></i> System Settings</h3>
+            <p>Configure system settings</p>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-primary">Settings</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-database"></i> Backup & Restore</h3>
+            <p>Manage system backups</p>
+            <a href="{{ url_for('admin.backup') }}" class="btn btn-secondary">Backup</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-shield-alt"></i> Security & Access Control</h3>
+            <p>Manage security settings</p>
+            <a href="{{ url_for('admin.security') }}" class="btn btn-secondary">Security</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-bell"></i> Notifications</h3>
+            <p>System-wide notifications</p>
+            <a href="#" class="btn btn-secondary">View Notifications</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <h3><i class="fas fa-user-circle"></i> Profile Management</h3>
+            <p>Update your profile</p>
+            <a href="{{ url_for('admin.profile') }}" class="btn btn-secondary">Manage Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

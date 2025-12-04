@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>User Management</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.role }}</td>
+                    <td><span class="status-badge status-{{ 'active' if user.is_active else 'inactive' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
+                    <td>{{ user.created_at }}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="editUser('{{ user.id }}')">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deactivateUser('{{ user.id }}')">Deactivate</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function editUser(userId) {
+    // Implementation for editing user
+    alert('Edit user functionality - User ID: ' + userId);
+}
+
+async function deactivateUser(userId) {
+    if (confirm('Are you sure you want to deactivate this user?')) {
+        try {
+            const response = await fetch('/admin/users/' + userId, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'}
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                alert('User deactivated successfully!');
+                location.reload();
+            }
+        } catch (error) {
+            alert('An error occurred.');
+        }
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section-modern">
+    <div class="hero-container">
+        <div class="hero-content-modern">
+            <div class="hero-text">
+                <h1 class="hero-headline">A Smarter Way to Support Students — Guidance Reporting Made Simple</h1>
+                <p class="hero-subtext">Streamline your guidance office operations with our comprehensive reporting system. Connect students, teachers, and counselors in one secure, easy-to-use platform.</p>
+                <div class="hero-cta">
+                    <a href="{{ url_for('auth.login') }}" class="btn-hero btn-primary-hero">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('anonymous.submit_report') }}" class="btn-hero btn-secondary-hero">
+                        <i class="fas fa-shield-alt"></i> Submit Anonymous Report
+                    </a>
+                </div>
+            </div>
+            <div class="hero-illustration">
+                <div class="illustration-container">
+                    <i class="fas fa-users hero-icon-large"></i>
+                    <div class="floating-elements">
+                        <div class="float-icon float-1"><i class="fas fa-comments"></i></div>
+                        <div class="float-icon float-2"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="float-icon float-3"><i class="fas fa-heart"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section-modern">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Everything You Need to Manage Guidance Services</h2>
+            <p class="section-subtitle">Comprehensive tools designed for modern guidance offices</p>
+        </div>
+        <div class="features-grid-modern">
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Student Reporting</h3>
+                <p>Students can easily submit reports, request counseling sessions, and track their case status in real-time.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3>Counseling Management</h3>
+                <p>Streamlined case management system for counselors to track, document, and resolve student cases efficiently.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Case Tracking</h3>
+                <p>Monitor case progress from submission to resolution with detailed tracking and status updates.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>Secure Communication</h3>
+                <p>Safe, encrypted communication tools connecting students, teachers, and counselors seamlessly.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Notification System</h3>
+                <p>Stay informed with real-time notifications for reports, case updates, and important announcements.</p>
+            </div>
+            <div class="feature-card-modern">
+                <div class="feature-icon-wrapper">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>Resources Library</h3>
+                <p>Access a comprehensive library of guidance resources, documents, and support materials.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="workflow-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Simple, streamlined process for effective guidance management</p>
+        </div>
+        <div class="workflow-steps">
+            <div class="workflow-step">
+                <div class="step-number">1</div>
+                <div class="step-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h3>Submit Report</h3>
+                <p>Students or teachers submit reports through an intuitive form interface.</p>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-number">2</div>
+                <div class="step-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Counselor Reviews</h3>
+                <p>Assigned counselors review and assess each case with full context.</p>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-number">3</div>
+                <div class="step-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h3>Case Management</h3>
+                <p>Comprehensive case tracking with notes, updates, and progress monitoring.</p>
+            </div>
+            <div class="workflow-arrow">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="workflow-step">
+                <div class="step-number">4</div>
+                <div class="step-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Resolution & Tracking</h3>
+                <p>Track resolution status and maintain complete case history.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Roles Section -->
+<section class="roles-section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Designed for Everyone</h2>
+            <p class="section-subtitle">Tailored dashboards for each user role</p>
+        </div>
+        <div class="roles-grid">
+            <div class="role-card role-student">
+                <div class="role-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <h3>Student</h3>
+                <p>Submit reports, request counseling, and track your case status easily.</p>
+                <ul class="role-features">
+                    <li><i class="fas fa-check"></i> Submit Reports</li>
+                    <li><i class="fas fa-check"></i> Request Counseling</li>
+                    <li><i class="fas fa-check"></i> Track Status</li>
+                    <li><i class="fas fa-check"></i> Access Resources</li>
+                </ul>
+                <a href="{{ url_for('auth.login') }}" class="role-btn">Get Started</a>
+            </div>
+            
+            <div class="role-card role-guest">
+                <div class="role-icon">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h3>Guest/Applicant</h3>
+                <p>Submit guidance requests and access exam schedules and resources.</p>
+                <ul class="role-features">
+                    <li><i class="fas fa-check"></i> Submit Requests</li>
+                    <li><i class="fas fa-check"></i> View Exam Schedule</li>
+                    <li><i class="fas fa-check"></i> Track Status</li>
+                    <li><i class="fas fa-check"></i> Access Resources</li>
+                </ul>
+                <a href="{{ url_for('auth.login') }}" class="role-btn">Get Started</a>
+            </div>
+            
+            <div class="role-card role-teacher">
+                <div class="role-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <h3>Teacher</h3>
+                <p>Review student reports, submit incidents, and monitor case progress.</p>
+                <ul class="role-features">
+                    <li><i class="fas fa-check"></i> Review Reports</li>
+                    <li><i class="fas fa-check"></i> Submit Incidents</li>
+                    <li><i class="fas fa-check"></i> Monitor Cases</li>
+                    <li><i class="fas fa-check"></i> Communication Tools</li>
+                </ul>
+                <a href="{{ url_for('auth.login') }}" class="role-btn">Get Started</a>
+            </div>
+            
+            <div class="role-card role-counselor">
+                <div class="role-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Counselor</h3>
+                <p>Manage assigned cases, track progress, and access analytics and resources.</p>
+                <ul class="role-features">
+                    <li><i class="fas fa-check"></i> Case Management</li>
+                    <li><i class="fas fa-check"></i> Case Notes</li>
+                    <li><i class="fas fa-check"></i> Analytics</li>
+                    <li><i class="fas fa-check"></i> Resource Library</li>
+                </ul>
+                <a href="{{ url_for('auth.login') }}" class="role-btn">Get Started</a>
+            </div>
+            
+            <div class="role-card role-admin">
+                <div class="role-icon">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h3>System Admin</h3>
+                <p>Complete system management, user administration, and comprehensive analytics.</p>
+                <ul class="role-features">
+                    <li><i class="fas fa-check"></i> User Management</li>
+                    <li><i class="fas fa-check"></i> System Settings</li>
+                    <li><i class="fas fa-check"></i> Analytics & Reports</li>
+                    <li><i class="fas fa-check"></i> Security & Backup</li>
+                </ul>
+                <a href="{{ url_for('auth.login') }}" class="role-btn">Get Started</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Transform Your Guidance Office?</h2>
+            <p>Join schools already using GMRS to streamline their guidance services</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('auth.register') }}" class="btn-hero btn-primary-hero">Start Free Today</a>
+                <a href="{{ url_for('main.contact') }}" class="btn-hero btn-secondary-hero">Contact Support</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

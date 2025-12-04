@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Student Reports Review</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Student</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Date Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ report.title }}</td>
+                    <td>{{ report.users.full_name if report.users else 'N/A' }}</td>
+                    <td>{{ report.category }}</td>
+                    <td><span class="status-badge status-{{ report.status }}">{{ report.status }}</span></td>
+                    <td>{{ report.created_at }}</td>
+                    <td><a href="#" class="btn btn-sm">View Details</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Request Counseling</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <form id="counselingForm">
+            <div class="form-group">
+                <label for="reason">Reason for Request:</label>
+                <textarea id="reason" name="reason" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="preferred_date">Preferred Date:</label>
+                <input type="date" id="preferred_date" name="preferred_date" required>
+            </div>
+            <div class="form-group">
+                <label for="urgency">Urgency:</label>
+                <select id="urgency" name="urgency" required>
+                    <option value="low">Low</option>
+                    <option value="normal" selected>Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('counselingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        reason: document.getElementById('reason').value,
+        preferred_date: document.getElementById('preferred_date').value,
+        urgency: document.getElementById('urgency').value
+    };
+    
+    try {
+        const response = await fetch('/student/request-counseling', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            alert('Counseling request submitted successfully!');
+            window.location.href = '/student/dashboard';
+        } else {
+            alert(data.error || 'Failed to submit request');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}
+

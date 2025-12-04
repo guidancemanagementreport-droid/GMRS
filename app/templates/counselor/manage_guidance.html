@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Manage Guidance & Resources</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <h3>Add New Resource</h3>
+        <form id="resourceForm">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="resource_type">Resource Type:</label>
+                <select id="resource_type" name="resource_type" required>
+                    <option value="document">Document</option>
+                    <option value="link">Link</option>
+                    <option value="video">Video</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Resource</button>
+        </form>
+    </div>
+    
+    <div class="resources-list">
+        <h3>Existing Resources</h3>
+        {% for resource in resources %}
+        <div class="resource-item">
+            <h4>{{ resource.title }}</h4>
+            <p>{{ resource.description }}</p>
+            <small>Type: {{ resource.resource_type }} | Created: {{ resource.created_at }}</small>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.getElementById('resourceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        resource_type: document.getElementById('resource_type').value
+    };
+    
+    try {
+        const response = await fetch('/counselor/manage-guidance', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            alert('Resource added successfully!');
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to add resource');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}
+

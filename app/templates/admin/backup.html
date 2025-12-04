@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Backup & Restore</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <h3>Database Backup</h3>
+        <p>Create a backup of the system database</p>
+        <button class="btn btn-primary" onclick="createBackup()">Create Backup</button>
+    </div>
+    
+    <div class="form-card">
+        <h3>Restore Database</h3>
+        <p>Restore from a previous backup</p>
+        <div class="form-group">
+            <label for="backup_file">Select Backup File:</label>
+            <input type="file" id="backup_file" accept=".sql,.backup">
+        </div>
+        <button class="btn btn-secondary" onclick="restoreBackup()">Restore Backup</button>
+    </div>
+</div>
+
+<script>
+function createBackup() {
+    alert('Backup functionality - This would trigger a database backup');
+}
+
+function restoreBackup() {
+    const file = document.getElementById('backup_file').files[0];
+    if (!file) {
+        alert('Please select a backup file');
+        return;
+    }
+    alert('Restore functionality - This would restore from: ' + file.name);
+}
+</script>
+{% endblock %}
+

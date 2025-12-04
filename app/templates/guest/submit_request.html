@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Submit Guidance Request</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <form id="requestForm">
+            <div class="form-group">
+                <label for="request_type">Request Type:</label>
+                <select id="request_type" name="request_type" required>
+                    <option value="information">Information Request</option>
+                    <option value="application">Application Assistance</option>
+                    <option value="counseling">Counseling Request</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('requestForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        request_type: document.getElementById('request_type').value,
+        description: document.getElementById('description').value
+    };
+    
+    try {
+        const response = await fetch('/guest/submit-request', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            alert('Request submitted successfully!');
+            window.location.href = '/guest/dashboard';
+        } else {
+            alert(data.error || 'Failed to submit request');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}
+

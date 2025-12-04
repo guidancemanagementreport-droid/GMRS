@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>System Settings</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="site_name">Site Name:</label>
+                <input type="text" id="site_name" name="site_name" value="{{ settings.get('site_name', '') }}">
+            </div>
+            <div class="form-group">
+                <label for="maintenance_mode">Maintenance Mode:</label>
+                <input type="checkbox" id="maintenance_mode" name="maintenance_mode" {% if settings.get('maintenance_mode') == 'true' %}checked{% endif %}>
+            </div>
+            <div class="form-group">
+                <label for="max_file_size">Max File Size (MB):</label>
+                <input type="number" id="max_file_size" name="max_file_size" value="{{ settings.get('max_file_size', '10') }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        site_name: document.getElementById('site_name').value,
+        maintenance_mode: document.getElementById('maintenance_mode').checked ? 'true' : 'false',
+        max_file_size: document.getElementById('max_file_size').value
+    };
+    
+    try {
+        const response = await fetch('/admin/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            alert('Settings saved successfully!');
+        } else {
+            alert(data.error || 'Failed to save settings');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}
+

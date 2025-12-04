@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Counseling Status</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Reason</th>
+                    <th>Preferred Date</th>
+                    <th>Urgency</th>
+                    <th>Status</th>
+                    <th>Date Requested</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                <tr>
+                    <td>{{ request.reason[:50] }}...</td>
+                    <td>{{ request.preferred_date }}</td>
+                    <td><span class="urgency-badge urgency-{{ request.urgency }}">{{ request.urgency }}</span></td>
+                    <td><span class="status-badge status-{{ request.status }}">{{ request.status }}</span></td>
+                    <td>{{ request.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

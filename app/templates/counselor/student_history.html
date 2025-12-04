@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Student History</h1>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Cases</h2>
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Case ID</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in cases %}
+                <tr>
+                    <td>{{ case.id }}</td>
+                    <td><span class="status-badge status-{{ case.status }}">{{ case.status }}</span></td>
+                    <td>{{ case.created_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Notes</h2>
+    <div class="notes-list">
+        {% for note in notes %}
+        <div class="note-item">
+            <p><strong>{{ note.note_type }}</strong> - {{ note.created_at }}</p>
+            <p>{{ note.note }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+

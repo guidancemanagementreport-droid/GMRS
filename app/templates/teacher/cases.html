@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Monitor Case Progress</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Case ID</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for case in cases %}
+                <tr>
+                    <td>{{ case.id }}</td>
+                    <td>{{ case.users.full_name if case.users else 'N/A' }}</td>
+                    <td><span class="status-badge status-{{ case.status }}">{{ case.status }}</span></td>
+                    <td>{{ case.created_at }}</td>
+                    <td><a href="#" class="btn btn-sm">View Details</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

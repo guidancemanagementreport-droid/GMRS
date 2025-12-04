@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Track Report Status</h1>
+    </div>
+</div>
+
+<div class="container">
+    {% if error %}
+    <div class="alert alert-error">
+        <p>{{ error }}</p>
+    </div>
+    {% elif report %}
+    <div class="track-result-card">
+        <h3>Report #{{ report.id }}</h3>
+        <div class="report-details">
+            <p><strong>Title:</strong> {{ report.title }}</p>
+            <p><strong>Category:</strong> {{ report.category }}</p>
+            <p><strong>Status:</strong> <span class="status-badge status-{{ report.status }}">{{ report.status }}</span></p>
+            <p><strong>Submitted:</strong> {{ report.created_at }}</p>
+            {% if report.description %}
+            <p><strong>Description:</strong> {{ report.description }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <p>No report found with the provided ID.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

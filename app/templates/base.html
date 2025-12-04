@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>{% block title %}Guidance Management Reporting System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="navbar-inner">
+                <div class="nav-logo">
+                    <a href="{{ url_for('main.home') }}">
+                        <div class="nav-logo-icon"></div>
+                        <span>GMRS</span>
+                    </a>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('main.home') }}"><span>Home</span></a></li>
+                    <li><a href="{{ url_for('main.about') }}"><span>About</span></a></li>
+                    <li><a href="{{ url_for('main.guidance_services') }}"><span>Guidance Services</span></a></li>
+                    <li><a href="{{ url_for('anonymous.submit_report') }}"><span>Anonymous Report</span></a></li>
+                    <li><a href="{{ url_for('main.resources') }}"><span>Resources</span></a></li>
+                    <li><a href="{{ url_for('main.contact') }}"><span>Contact/Crisis Support</span></a></li>
+                    <li><a href="{{ url_for('main.report_tracker') }}"><span>Report Tracker</span></a></li>
+                </ul>
+                <div class="nav-actions">
+                    {% if session.user_id %}
+                        <a href="{{ url_for('auth.logout') }}" class="nav-btn-contact">
+                            <span>Logout</span>
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="nav-btn-contact">
+                            <span>Login</span>
+                        </a>
+                    {% endif %}
+                </div>
+                <button class="hamburger" aria-label="Toggle menu" type="button">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2024 Guidance Management Reporting System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

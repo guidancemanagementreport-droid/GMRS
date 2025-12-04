@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Report Tracker Status</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="tracker-form">
+        <h2>Track Your Report</h2>
+        <form id="trackForm">
+            <div class="form-group">
+                <label for="report_id">Report ID:</label>
+                <input type="text" id="report_id" name="report_id" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Track Report</button>
+        </form>
+        <div id="trackResult" class="track-result"></div>
+    </div>
+</div>
+
+<script>
+document.getElementById('trackForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const reportId = document.getElementById('report_id').value;
+    window.location.href = '/anonymous/track/' + reportId;
+});
+</script>
+{% endblock %}
+

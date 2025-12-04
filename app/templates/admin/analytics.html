@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Report Analytics</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Reports</h3>
+            <p class="stat-number">{{ stats.total_reports }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Pending Reports</h3>
+            <p class="stat-number">{{ stats.pending_reports }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Resolved Reports</h3>
+            <p class="stat-number">{{ stats.resolved_reports }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Total Cases</h3>
+            <p class="stat-number">{{ stats.total_cases }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Active Cases</h3>
+            <p class="stat-number">{{ stats.active_cases }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Closed Cases</h3>
+            <p class="stat-number">{{ stats.closed_cases }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

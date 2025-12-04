@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Submit Incident Report</h1>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card">
+        <form id="incidentForm">
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="student_id">Student ID:</label>
+                <input type="text" id="student_id" name="student_id">
+            </div>
+            <div class="form-group">
+                <label for="category">Category:</label>
+                <select id="category" name="category" required>
+                    <option value="behavioral">Behavioral</option>
+                    <option value="academic">Academic</option>
+                    <option value="safety">Safety</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Incident</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('incidentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = {
+        title: document.getElementById('title').value,
+        student_id: document.getElementById('student_id').value,
+        category: document.getElementById('category').value,
+        description: document.getElementById('description').value
+    };
+    
+    try {
+        const response = await fetch('/teacher/submit-incident', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            alert('Incident report submitted successfully!');
+            window.location.href = '/teacher/dashboard';
+        } else {
+            alert(data.error || 'Failed to submit incident');
+        }
+    } catch (error) {
+        alert('An error occurred. Please try again.');
+    }
+});
+</script>
+{% endblock %}
+
