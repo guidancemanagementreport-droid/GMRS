@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>{% block title %}Dashboard - Guidance Management Reporting System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body class="dashboard-body">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar sidebar-{{ session.user_role }}" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon"></div>
+                <span>GMRS</span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            {% if session.user_role == 'student' %}
+                <a href="{{ url_for('student.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('student.submit_report') }}" class="sidebar-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Submit Report</span>
+                </a>
+                <a href="{{ url_for('student.report_status') }}" class="sidebar-link">
+                    <i class="fas fa-search"></i>
+                    <span>Report Status</span>
+                </a>
+                <a href="{{ url_for('student.request_counseling') }}" class="sidebar-link">
+                    <i class="fas fa-comments"></i>
+                    <span>Request Counseling</span>
+                </a>
+                <a href="{{ url_for('student.counseling_status') }}" class="sidebar-link">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Counseling Status</span>
+                </a>
+                <a href="{{ url_for('student.resources') }}" class="sidebar-link">
+                    <i class="fas fa-book"></i>
+                    <span>Guidance Resources</span>
+                </a>
+                <a href="{{ url_for('student.profile') }}" class="sidebar-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('main.contact') }}" class="sidebar-link">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help/Support</span>
+                </a>
+            {% elif session.user_role == 'teacher' %}
+                <a href="{{ url_for('teacher.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('teacher.review_reports') }}" class="sidebar-link">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Student Reports</span>
+                </a>
+                <a href="{{ url_for('teacher.submit_incident') }}" class="sidebar-link">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Submit Incident</span>
+                </a>
+                <a href="{{ url_for('teacher.monitor_case_program') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Monitor Cases</span>
+                </a>
+                <a href="{{ url_for('teacher.profile') }}" class="sidebar-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            {% elif session.user_role == 'counselor' %}
+                <a href="{{ url_for('counselor.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('counselor.case_record') }}" class="sidebar-link">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Case Records</span>
+                </a>
+                <a href="{{ url_for('counselor.case_record') }}" class="sidebar-link">
+                    <i class="fas fa-history"></i>
+                    <span>Student History</span>
+                </a>
+                <a href="{{ url_for('counselor.analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Statistical Report</span>
+                </a>
+                <a href="{{ url_for('counselor.manage_guidance') }}" class="sidebar-link">
+                    <i class="fas fa-book"></i>
+                    <span>Resource Library</span>
+                </a>
+                <a href="{{ url_for('counselor.profile') }}" class="sidebar-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            {% elif session.user_role == 'admin' %}
+                <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('admin.manage_users') }}" class="sidebar-link">
+                    <i class="fas fa-users"></i>
+                    <span>User Management</span>
+                </a>
+                <a href="{{ url_for('admin.analytics') }}" class="sidebar-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Report Analytics</span>
+                </a>
+                <a href="{{ url_for('admin.backup') }}" class="sidebar-link">
+                    <i class="fas fa-database"></i>
+                    <span>Backup & Restore</span>
+                </a>
+                <a href="{{ url_for('admin.profile') }}" class="sidebar-link">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+            {% endif %}
+        </nav>
+        
+        <div class="sidebar-footer">
+            <a href="{{ url_for('main.home') }}" class="sidebar-link">
+                <i class="fas fa-globe"></i>
+                <span>Homepage</span>
+            </a>
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link sidebar-link-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-content">
+                <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-title">
+                    <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+                </div>
+                <div class="topbar-actions">
+                    <div class="user-info">
+                        <span class="user-name">{{ session.get('user_name', 'User') }}</span>
+                        <span class="user-role">{{ session.user_role|title }}</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Page Content -->
+        <main class="dashboard-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    
+    <!-- Mobile Overlay for Sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        // Toastify helper function
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: '#34C38F',
+                error: '#F44336',
+                warning: '#FF9F43',
+                info: '#5DA8FF'
+            };
+            
+            Toastify({
+                text: message,
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: colors[type] || colors.info,
+                stopOnFocus: true,
+            }).showToast();
+        }
+        
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            function toggleSidebar() {
+                sidebar.classList.toggle('collapsed');
+                sidebarOverlay.classList.toggle('active');
+            }
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', toggleSidebar);
+            }
+            
+            if (mobileSidebarToggle) {
+                mobileSidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('mobile-open');
+                    sidebarOverlay.classList.toggle('active');
+                });
+            }
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('mobile-open');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+            
+            // Set active sidebar link
+            const currentPath = window.location.pathname;
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

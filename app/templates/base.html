@@ -25,11 +25,10 @@
                 <ul class="nav-menu">
                     <li><a href="{{ url_for('main.home') }}"><span>Home</span></a></li>
                     <li><a href="{{ url_for('main.about') }}"><span>About</span></a></li>
-                    <li><a href="{{ url_for('main.guidance_services') }}"><span>Guidance Services</span></a></li>
-                    <li><a href="{{ url_for('anonymous.submit_report') }}"><span>Anonymous Report</span></a></li>
-                    <li><a href="{{ url_for('main.resources') }}"><span>Resources</span></a></li>
+                    <li><a href="{{ url_for('anonymous.submit_report') }}"><span>Anonymous Report Form</span></a></li>
+                    <li><a href="{{ url_for('anonymous.track_report') }}"><span>Anonymous Report Tracker</span></a></li>
                     <li><a href="{{ url_for('main.contact') }}"><span>Contact/Crisis Support</span></a></li>
-                    <li><a href="{{ url_for('main.report_tracker') }}"><span>Report Tracker</span></a></li>
+                    <li><a href="{{ url_for('main.terms') }}"><span>Terms & Condition</span></a></li>
                 </ul>
                 <div class="nav-actions">
                     {% if session.user_id %}

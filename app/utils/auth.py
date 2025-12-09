@@ -8,11 +8,16 @@ def get_current_user():
     if not user_id:
         return None
     
-    supabase: Client = current_app.supabase
+    # Use admin client to bypass RLS, or fallback to regular client
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    if not supabase:
+        return None
+    
     try:
         user = supabase.table('users').select('*').eq('id', user_id).single().execute()
         return user.data if user.data else None
-    except:
+    except Exception as e:
+        print(f"Error getting current user: {str(e)}")  # Debug
         return None
 
 def require_auth(roles=None):

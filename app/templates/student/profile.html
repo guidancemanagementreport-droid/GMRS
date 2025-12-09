@@ -1,32 +1,37 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Profile Management{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>Profile Management</h1>
-    </div>
-</div>
-
 <div class="container">
     <div class="form-card">
+        <h2>My Profile</h2>
+        <p class="text-muted">Update your profile information</p>
+        
         <form id="profileForm">
             <div class="form-group">
-                <label for="full_name">Full Name:</label>
-                <input type="text" id="full_name" name="full_name" value="{{ user_data.full_name or '' }}" required>
+                <label for="first_name">First Name *</label>
+                <input type="text" id="first_name" name="first_name" value="{{ user_data.first_name or '' }}" required>
             </div>
             <div class="form-group">
-                <label for="email">Email:</label>
+                <label for="last_name">Last Name *</label>
+                <input type="text" id="last_name" name="last_name" value="{{ user_data.last_name or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
                 <input type="email" id="email" name="email" value="{{ user_data.email or '' }}" disabled>
+                <small class="form-text">Email cannot be changed</small>
             </div>
             <div class="form-group">
-                <label for="phone">Phone:</label>
-                <input type="tel" id="phone" name="phone" value="{{ user_data.phone or '' }}">
+                <label for="contact_number">Contact Number</label>
+                <input type="tel" id="contact_number" name="contact_number" value="{{ user_data.contact_number or '' }}" placeholder="Enter your phone number">
             </div>
             <div class="form-group">
-                <label for="student_id">Student ID:</label>
-                <input type="text" id="student_id" name="student_id" value="{{ user_data.student_id or '' }}">
+                <label for="year_level">Year Level</label>
+                <input type="text" id="year_level" name="year_level" value="{{ user_data.year_level or '' }}" placeholder="e.g., Grade 10, Senior">
             </div>
             <button type="submit" class="btn btn-primary">Update Profile</button>
+            <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
 </div>
@@ -35,9 +40,10 @@
 document.getElementById('profileForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = {
-        full_name: document.getElementById('full_name').value,
-        phone: document.getElementById('phone').value,
-        student_id: document.getElementById('student_id').value
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        contact_number: document.getElementById('contact_number').value,
+        year_level: document.getElementById('year_level').value
     };
     
     try {
@@ -49,14 +55,60 @@ document.getElementById('profileForm').addEventListener('submit', async function
         
         const data = await response.json();
         if (data.success) {
-            alert('Profile updated successfully!');
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: 'Profile updated successfully!',
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#34C38F",
+                }).showToast();
+            } else {
+                alert('Profile updated successfully!');
+            }
         } else {
-            alert(data.error || 'Failed to update profile');
+            const errorMsg = data.error || 'Failed to update profile';
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: errorMsg,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#F44336",
+                    close: true
+                }).showToast();
+            } else {
+                alert(errorMsg);
+            }
         }
     } catch (error) {
-        alert('An error occurred. Please try again.');
+        if (typeof Toastify === 'function') {
+            Toastify({
+                text: 'An error occurred. Please try again.',
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#F44336",
+            }).showToast();
+        } else {
+            alert('An error occurred. Please try again.');
+        }
     }
 });
 </script>
+
+<style>
+.text-muted {
+    color: #6B7280;
+    margin-bottom: 1.5rem;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+</style>
 {% endblock %}
 

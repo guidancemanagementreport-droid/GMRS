@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1>Terms & Conditions</h1>
+        <p>Please read these terms carefully before using the Guidance Management Reporting System</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-card" style="max-width: 900px; margin: 2rem auto;">
+        <div style="line-height: 1.8; color: var(--text-dark);">
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">1. Acceptance of Terms</h2>
+                <p>By accessing and using the Guidance Management Reporting System (GMRS), you accept and agree to be bound by the terms and provision of this agreement.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">2. Use License</h2>
+                <p>Permission is granted to temporarily use GMRS for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                    <li>Modify or copy the materials</li>
+                    <li>Use the materials for any commercial purpose or for any public display</li>
+                    <li>Attempt to decompile or reverse engineer any software</li>
+                    <li>Remove any copyright or other proprietary notations from the materials</li>
+                </ul>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">3. User Accounts</h2>
+                <p>You are responsible for maintaining the confidentiality of your account and password. You agree to accept responsibility for all activities that occur under your account.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">4. Privacy and Confidentiality</h2>
+                <p>All reports and information submitted through GMRS are treated with strict confidentiality. Anonymous reports are protected and will not reveal your identity unless required by law.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">5. Prohibited Uses</h2>
+                <p>You may not use GMRS:</p>
+                <ul style="margin-left: 2rem; margin-top: 0.5rem;">
+                    <li>In any way that violates any applicable law or regulation</li>
+                    <li>To transmit any malicious code or viruses</li>
+                    <li>To submit false or misleading information</li>
+                    <li>To impersonate or attempt to impersonate another user</li>
+                </ul>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">6. Report Submission</h2>
+                <p>When submitting reports, you agree to provide accurate and truthful information. False reports may result in account suspension or legal action.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">7. Limitation of Liability</h2>
+                <p>GMRS and its operators shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">8. Changes to Terms</h2>
+                <p>We reserve the right to modify these terms at any time. Your continued use of GMRS after any changes constitutes acceptance of the new terms.</p>
+            </section>
+
+            <section style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary-color); margin-bottom: 1rem;">9. Contact Information</h2>
+                <p>For questions about these Terms & Conditions, please contact the Guidance Office through the <a href="{{ url_for('main.contact') }}" style="color: var(--primary-color);">Contact/Crisis Support</a> page.</p>
+            </section>
+
+            <div style="margin-top: 3rem; padding-top: 2rem; border-top: 2px solid var(--border-color); text-align: center;">
+                <p style="color: var(--text-light); font-size: 0.9rem;">
+                    Last updated: {{ moment().format('MMMM DD, YYYY') if moment else '2024' }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

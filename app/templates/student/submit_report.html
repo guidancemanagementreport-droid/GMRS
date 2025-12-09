@@ -1,11 +1,8 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Submit Report{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>Submit Report</h1>
-    </div>
-</div>
 
 <div class="container">
     <div class="form-card">
@@ -50,10 +47,36 @@ document.getElementById('reportForm').addEventListener('submit', async function(
         
         const data = await response.json();
         if (data.success) {
-            alert('Report submitted successfully!');
-            window.location.href = '/student/dashboard';
+            // Show success message
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: 'Report submitted successfully! Redirecting to dashboard...',
+                    duration: 2000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#34C38F",
+                }).showToast();
+                setTimeout(() => {
+                    window.location.replace('/student/dashboard');
+                }, 500);
+            } else {
+                alert('Report submitted successfully!');
+                window.location.replace('/student/dashboard');
+            }
         } else {
-            alert(data.error || 'Failed to submit report');
+            const errorMsg = data.error || 'Failed to submit report';
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: errorMsg,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#F44336",
+                    close: true
+                }).showToast();
+            } else {
+                alert(errorMsg);
+            }
         }
     } catch (error) {
         alert('An error occurred. Please try again.');

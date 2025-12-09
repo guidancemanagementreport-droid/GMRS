@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for
 
 main_bp = Blueprint('main', __name__)
 
@@ -24,5 +24,10 @@ def contact():
 
 @main_bp.route('/report-tracker')
 def report_tracker():
-    return render_template('main/report_tracker.html')
+    # Redirect to anonymous report tracker
+    return redirect(url_for('anonymous.track_report'))
+
+@main_bp.route('/terms')
+def terms():
+    return render_template('main/terms.html')
 

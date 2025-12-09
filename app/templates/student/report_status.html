@@ -1,35 +1,120 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Report Status{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>Report Status</h1>
+<div class="container">
+    <div class="form-card">
+        <h2>My Reports</h2>
+        {% if reports %}
+        <div class="table-container" style="overflow-x: auto; margin-top: 1.5rem;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Date Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>{{ report.title }}</td>
+                        <td><span class="badge badge-info">{{ report.category|title }}</span></td>
+                        <td><span class="status-badge status-{{ report.status|replace('_', '-') }}">{{ report.status|replace('_', ' ')|title }}</span></td>
+                        <td>
+                            {% if report.created_at %}
+                                {{ report.created_at[:10] if report.created_at|length > 10 else report.created_at }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 3rem 1rem; color: #6B7280;">
+            <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No reports submitted yet</p>
+            <p style="font-size: 0.9rem;">Submit your first report to see it here.</p>
+            <a href="{{ url_for('student.submit_report') }}" class="btn btn-primary" style="margin-top: 1.5rem;">Submit Report</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
-<div class="container">
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Date Submitted</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for report in reports %}
-                <tr>
-                    <td>{{ report.title }}</td>
-                    <td>{{ report.category }}</td>
-                    <td><span class="status-badge status-{{ report.status }}">{{ report.status }}</span></td>
-                    <td>{{ report.created_at }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+<style>
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.data-table thead {
+    background-color: #f8f9fa;
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4B5563;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge.status-in-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge.status-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge.status-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+</style>
 {% endblock %}
 

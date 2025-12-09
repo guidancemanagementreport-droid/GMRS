@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session, redirect, url_for, render_template, current_app
 from app.utils.auth import get_current_user
+import bcrypt
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -9,48 +10,86 @@ def login():
         return render_template('auth/login.html')
     
     data = request.get_json()
-    email = data.get('email')
+    username = data.get('username') or data.get('email')  # Support both for backward compatibility
     password = data.get('password')
     
-    if not email or not password:
-        return jsonify({'error': 'Email and password required'}), 400
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
     
     try:
-        supabase = current_app.supabase
-        # Authenticate with Supabase
-        auth_response = supabase.auth.sign_in_with_password({
-            'email': email,
-            'password': password
-        })
+        # Use admin client (service role) for login queries to bypass RLS
+        supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+        if not supabase:
+            return jsonify({'error': 'Database connection failed'}), 500
         
-        if auth_response.user:
-            # Get user role from users table
-            user = supabase.table('users').select('*').eq('id', auth_response.user.id).single().execute()
-            user_data = user.data if user.data else {}
-            
-            session['user_id'] = auth_response.user.id
-            session['user_role'] = user_data.get('role', 'student')
-            session['user_name'] = user_data.get('full_name', user_data.get('email', 'User'))
-            session['access_token'] = auth_response.session.access_token
-            
-            # Redirect based on role
-            role = session['user_role']
-            redirect_map = {
-                'student': '/student/dashboard',
-                'guest': '/guest/dashboard',
-                'teacher': '/teacher/dashboard',
-                'counselor': '/counselor/dashboard',
-                'admin': '/admin/dashboard'
-            }
-            
-            return jsonify({
-                'success': True,
-                'redirect': redirect_map.get(role, '/')
-            })
+        # Query user by username only
+        try:
+            print(f"Attempting to find user with username: {username}")  # Debug
+            user_query = supabase.table('users').select('*').eq('username', username).eq('is_active', True).execute()
+            print(f"Query result: {user_query.data if user_query else 'None'}")  # Debug
+        except Exception as e:
+            print(f"Database query error: {str(e)}")  # Debug
+            return jsonify({'error': f'Database query failed: {str(e)}'}), 401
+        
+        if not user_query or not user_query.data or len(user_query.data) == 0:
+            print(f"No user found with username: {username}")  # Debug
+            return jsonify({'error': 'User not found or account is inactive'}), 401
+        
+        user_data = user_query.data[0]
+        print(f"User found: {user_data.get('username')}, role: {user_data.get('role')}")  # Debug
+        
+        # Verify password using bcrypt
+        password_hash = user_data.get('password_hash', '')
+        if not password_hash:
+            print("No password hash found for user")  # Debug
+            return jsonify({'error': 'User account has no password set'}), 401
+        
+        try:
+            # Check password - bcrypt.checkpw expects bytes
+            print("Verifying password...")  # Debug
+            password_valid = bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+            print(f"Password valid: {password_valid}")  # Debug
+        except Exception as e:
+            print(f"Password verification exception: {str(e)}")  # Debug
+            return jsonify({'error': f'Password verification error: {str(e)}'}), 401
+        
+        if not password_valid:
+            print("Password verification failed")  # Debug
+            return jsonify({'error': 'Invalid password'}), 401
+        
+        # Set session data
+        role = user_data.get('role', 'student')
+        session['user_id'] = str(user_data.get('id'))
+        session['user_role'] = role
+        session['user_name'] = f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip() or user_data.get('username', 'User')
+        session['username'] = user_data.get('username', '')
+        
+        # Ensure session is saved
+        session.permanent = True
+        
+        # Redirect based on role
+        redirect_map = {
+            'student': '/student/dashboard',
+            'guest': '/guest/dashboard',
+            'teacher': '/teacher/dashboard',
+            'counselor': '/counselor/dashboard',
+            'admin': '/admin/dashboard'
+        }
+        
+        redirect_url = redirect_map.get(role, '/')
+        print(f"Login successful for user: {user_data.get('username')}, role: {role}, redirecting to: {redirect_url}")  # Debug
+        
+        return jsonify({
+            'success': True,
+            'redirect': redirect_url,
+            'role': role
+        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 401
-    
-    return jsonify({'error': 'Invalid credentials'}), 401
+        import traceback
+        error_msg = str(e)
+        trace = traceback.format_exc()
+        print(f"Login error: {error_msg}\n{trace}")  # Log to console for debugging
+        return jsonify({'error': f'Login failed: {error_msg}'}), 401
 
 @auth_bp.route('/logout')
 def logout():

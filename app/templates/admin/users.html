@@ -1,13 +1,16 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}User Management{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>User Management</h1>
-    </div>
-</div>
-
 <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1>User Management</h1>
+        <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New User
+        </a>
+    </div>
+    
     <div class="table-container">
         <table class="data-table">
             <thead>
@@ -41,8 +44,49 @@
 
 <script>
 async function editUser(userId) {
-    // Implementation for editing user
-    alert('Edit user functionality - User ID: ' + userId);
+    // Get user data and show edit modal/form
+    const userRow = event.target.closest('tr');
+    const userName = userRow.querySelector('td:nth-child(1)').textContent;
+    const userEmail = userRow.querySelector('td:nth-child(2)').textContent;
+    const userRole = userRow.querySelector('td:nth-child(3)').textContent;
+    
+    const newName = prompt('Enter new full name:', userName);
+    if (!newName) return;
+    
+    const newRole = prompt('Enter new role (student/teacher/counselor/admin):', userRole);
+    if (!newRole) return;
+    
+    try {
+        const response = await fetch('/admin/users/' + userId, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                full_name: newName,
+                role: newRole,
+                is_active: true
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            if (typeof showToast === 'function') {
+                showToast('User updated successfully!', 'success');
+            } else {
+                Toastify({
+                    text: 'User updated successfully!',
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#34C38F",
+                }).showToast();
+            }
+            setTimeout(() => location.reload(), 1000);
+        }
+    } catch (error) {
+        if (typeof showToast === 'function') {
+            showToast('An error occurred', 'error');
+        }
+    }
 }
 
 async function deactivateUser(userId) {
@@ -55,11 +99,23 @@ async function deactivateUser(userId) {
             
             const data = await response.json();
             if (data.success) {
-                alert('User deactivated successfully!');
-                location.reload();
+                if (typeof showToast === 'function') {
+                    showToast('User deactivated successfully!', 'success');
+                } else {
+                    Toastify({
+                        text: 'User deactivated successfully!',
+                        duration: 3000,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "#34C38F",
+                    }).showToast();
+                }
+                setTimeout(() => location.reload(), 1000);
             }
         } catch (error) {
-            alert('An error occurred.');
+            if (typeof showToast === 'function') {
+                showToast('An error occurred', 'error');
+            }
         }
     }
 }

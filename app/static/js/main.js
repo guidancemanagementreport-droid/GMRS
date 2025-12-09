@@ -207,7 +207,32 @@ function validateForm(formId) {
     return isValid;
 }
 
-// Notification helper
+// Toastify notification helper (preferred method)
+function showToast(message, type = 'info') {
+    const colors = {
+        success: '#34C38F',
+        error: '#F44336',
+        warning: '#FF9F43',
+        info: '#5DA8FF'
+    };
+    
+    if (typeof Toastify !== 'undefined') {
+        Toastify({
+            text: message,
+            duration: 5000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: colors[type] || colors.info,
+            stopOnFocus: true,
+            close: type === 'error' || type === 'warning'
+        }).showToast();
+    } else {
+        // Fallback to custom notification
+        showNotification(message, type);
+    }
+}
+
+// Notification helper (fallback)
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `alert alert-${type}`;

@@ -1,10 +1,9 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Counselor Dashboard{% endblock %}
 
 {% block content %}
 <div class="dashboard-container counselor-dashboard">
-    <div class="dashboard-header">
-        <h1><i class="fas fa-user-md"></i> Counselor Dashboard</h1>
-    </div>
     
     <div class="dashboard-stats">
         <div class="stat-card">
@@ -21,7 +20,7 @@
         <div class="dashboard-card">
             <h3><i class="fas fa-folder-open"></i> Assigned Cases</h3>
             <p>View and manage your assigned cases</p>
-            <a href="{{ url_for('counselor.assigned_cases') }}" class="btn btn-primary">View Cases</a>
+            <a href="{{ url_for('counselor.case_record') }}" class="btn btn-primary">View Cases</a>
         </div>
         
         <div class="dashboard-card">

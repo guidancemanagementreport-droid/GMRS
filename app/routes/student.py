@@ -7,21 +7,33 @@ student_bp = Blueprint('student', __name__)
 @require_auth(roles=['student'])
 def dashboard():
     user = get_current_user()
-    supabase = request.app.supabase
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     
     # Get user's reports
-    reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+    try:
+        reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        reports_data = reports.data if reports.data else []
+    except:
+        reports_data = []
     
     # Get counseling requests
-    counseling = supabase.table('counseling_requests').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+    try:
+        counseling = supabase.table('counseling_requests').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        counseling_data = counseling.data if counseling.data else []
+    except:
+        counseling_data = []
     
     # Get notifications
-    notifications = supabase.table('notifications').select('*').eq('user_id', user['id']).order('created_at', desc=True).limit(10).execute()
+    try:
+        notifications = supabase.table('notifications').select('*').eq('user_id', user['id']).order('created_at', desc=True).limit(10).execute()
+        notifications_data = notifications.data if notifications.data else []
+    except:
+        notifications_data = []
     
     return render_template('student/dashboard.html',
-                         reports=reports.data if reports.data else [],
-                         counseling=counseling.data if counseling.data else [],
-                         notifications=notifications.data if notifications.data else [])
+                         reports=reports_data,
+                         counseling=counseling_data,
+                         notifications=notifications_data)
 
 @student_bp.route('/submit-report', methods=['GET', 'POST'])
 @require_auth(roles=['student'])
@@ -51,9 +63,13 @@ def submit_report():
 @require_auth(roles=['student'])
 def report_status():
     user = get_current_user()
-    supabase = request.app.supabase
-    reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
-    return render_template('student/report_status.html', reports=reports.data if reports.data else [])
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    try:
+        reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        reports_data = reports.data if reports.data else []
+    except:
+        reports_data = []
+    return render_template('student/report_status.html', reports=reports_data)
 
 @student_bp.route('/request-counseling', methods=['GET', 'POST'])
 @require_auth(roles=['student'])
@@ -82,15 +98,46 @@ def request_counseling():
 @require_auth(roles=['student'])
 def counseling_status():
     user = get_current_user()
-    supabase = request.app.supabase
-    requests = supabase.table('counseling_requests').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
-    return render_template('student/counseling_status.html', requests=requests.data if requests.data else [])
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    try:
+        requests = supabase.table('counseling_requests').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        requests_data = requests.data if requests.data else []
+    except:
+        requests_data = []
+    return render_template('student/counseling_status.html', requests=requests_data)
+
+@student_bp.route('/help-support')
+@require_auth(roles=['student'])
+def help_support():
+    return render_template('student/help_support.html')
+
+@student_bp.route('/notifications')
+@require_auth(roles=['student'])
+def notifications():
+    user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    notifications = supabase.table('notifications').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+    return render_template('student/notifications.html', notifications=notifications.data if notifications.data else [])
+
+@student_bp.route('/resources')
+@require_auth(roles=['student'])
+def resources():
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    try:
+        resources_data = supabase.table('resources').select('*').order('created_at', desc=True).execute()
+        resources_list = resources_data.data if resources_data.data else []
+    except Exception as e:
+        print(f"Error fetching resources: {e}")
+        # If table doesn't exist or there's an error, return empty list
+        resources_list = []
+    
+    return render_template('student/resources.html', resources=resources_list)
 
 @student_bp.route('/profile', methods=['GET', 'POST'])
 @require_auth(roles=['student'])
 def profile():
     user = get_current_user()
-    supabase = request.app.supabase
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     
     if request.method == 'GET':
         user_data = supabase.table('users').select('*').eq('id', user['id']).single().execute()
@@ -98,9 +145,10 @@ def profile():
     
     data = request.get_json()
     supabase.table('users').update({
-        'full_name': data.get('full_name'),
-        'phone': data.get('phone'),
-        'student_id': data.get('student_id')
+        'first_name': data.get('first_name'),
+        'last_name': data.get('last_name'),
+        'contact_number': data.get('contact_number'),
+        'year_level': data.get('year_level')
     }).eq('id', user['id']).execute()
     
     return jsonify({'success': True})

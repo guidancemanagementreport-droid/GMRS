@@ -4,32 +4,133 @@
 <div class="page-header">
     <div class="container">
         <h1>Track Report Status</h1>
+        <p>Enter your tracking code to view your report status</p>
     </div>
 </div>
 
 <div class="container">
+    <div class="form-card" style="max-width: 600px; margin: 2rem auto;">
+        <form id="trackForm">
+            <div class="form-group">
+                <label for="tracking_code">Tracking Code</label>
+                <input type="text" id="tracking_code" name="tracking_code" 
+                       placeholder="Enter your 8-character tracking code" 
+                       value="{{ tracking_code or '' }}"
+                       style="text-transform: uppercase; font-family: monospace; font-size: 1.2rem; letter-spacing: 0.2em; text-align: center;"
+                       maxlength="8" required>
+                <small class="form-text">Enter the tracking code you received when submitting your report</small>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Track Report</button>
+        </form>
+    </div>
+    
     {% if error %}
-    <div class="alert alert-error">
+    <div class="alert alert-error" style="max-width: 600px; margin: 1rem auto;">
         <p>{{ error }}</p>
     </div>
     {% elif report %}
-    <div class="track-result-card">
-        <h3>Report #{{ report.id }}</h3>
+    <div class="form-card" style="max-width: 800px; margin: 2rem auto;">
+        <h2 style="margin-bottom: 1.5rem;">Report Status</h2>
         <div class="report-details">
-            <p><strong>Title:</strong> {{ report.title }}</p>
-            <p><strong>Category:</strong> {{ report.category }}</p>
-            <p><strong>Status:</strong> <span class="status-badge status-{{ report.status }}">{{ report.status }}</span></p>
-            <p><strong>Submitted:</strong> {{ report.created_at }}</p>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <p style="margin: 0.5rem 0;"><strong>Tracking Code:</strong> 
+                    <span style="font-family: monospace; font-size: 1.2rem; font-weight: bold; color: #0D1E4B;">{{ report.tracking_code or 'N/A' }}</span>
+                </p>
+            </div>
+            <p style="margin: 0.5rem 0;"><strong>Title:</strong> {{ report.title }}</p>
+            <p style="margin: 0.5rem 0;"><strong>Category:</strong> {{ report.category|title }}</p>
+            <p style="margin: 0.5rem 0;"><strong>Status:</strong> 
+                <span class="status-badge status-{{ report.status }}">{{ report.status|replace('_', ' ')|title }}</span>
+            </p>
+            <p style="margin: 0.5rem 0;"><strong>Submitted:</strong> {{ report.created_at }}</p>
+            {% if report.updated_at and report.updated_at != report.created_at %}
+            <p style="margin: 0.5rem 0;"><strong>Last Updated:</strong> {{ report.updated_at }}</p>
+            {% endif %}
             {% if report.description %}
-            <p><strong>Description:</strong> {{ report.description }}</p>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #E5E7EB;">
+                <p style="margin: 0.5rem 0;"><strong>Description:</strong></p>
+                <p style="margin: 0.5rem 0; color: #6B7280;">{{ report.description }}</p>
+            </div>
             {% endif %}
         </div>
     </div>
-    {% else %}
-    <div class="alert alert-info">
-        <p>No report found with the provided ID.</p>
-    </div>
     {% endif %}
 </div>
+
+<script>
+document.getElementById('trackForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const trackingCode = document.getElementById('tracking_code').value.toUpperCase().trim();
+    
+    if (!trackingCode || trackingCode.length !== 8) {
+        Toastify({
+            text: 'Please enter a valid 8-character tracking code',
+            duration: 5000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#FF9F43",
+        }).showToast();
+        return;
+    }
+    
+    try {
+        const response = await fetch('/anonymous/track', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ tracking_code: trackingCode })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.report) {
+            // Redirect to show report with tracking code
+            window.location.href = '/anonymous/track/' + trackingCode;
+        } else {
+            Toastify({
+                text: data.error || 'Report not found',
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#F44336",
+            }).showToast();
+        }
+    } catch (error) {
+        Toastify({
+            text: 'An error occurred. Please try again.',
+            duration: 5000,
+            gravity: "top",
+            position: "right",
+            backgroundColor: "#F44336",
+        }).showToast();
+    }
+});
+
+// Auto-format tracking code input
+document.getElementById('tracking_code').addEventListener('input', function(e) {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+});
+</script>
+
+<style>
+.track-result-card {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.report-details p {
+    margin: 0.75rem 0;
+    font-size: 1rem;
+}
+
+.form-text {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+</style>
 {% endblock %}
 
