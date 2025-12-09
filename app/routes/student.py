@@ -11,7 +11,7 @@ def dashboard():
     
     # Get user's reports
     try:
-        reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        reports = supabase.table('student_reports').select('*').eq('student_id', user['id']).order('created_at', desc=True).execute()
         reports_data = reports.data if reports.data else []
     except:
         reports_data = []
@@ -41,22 +41,69 @@ def submit_report():
     if request.method == 'GET':
         return render_template('student/submit_report.html')
     
+    import random
+    import string
+    
     user = get_current_user()
     data = request.get_json()
     
+    # Generate unique tracking code (8 characters: 2 letters + 6 digits)
+    def generate_tracking_code():
+        letters = ''.join(random.choices(string.ascii_uppercase, k=2))
+        numbers = ''.join(random.choices(string.digits, k=6))
+        return f"{letters}{numbers}"
+    
     try:
-        supabase = current_app.supabase
-        report = supabase.table('reports').insert({
-            'user_id': user['id'],
-            'title': data.get('title'),
-            'description': data.get('description'),
-            'category': data.get('category'),
-            'status': 'pending',
-            'reported_by': 'student'
-        }).execute()
+        supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
         
-        return jsonify({'success': True, 'report': report.data[0] if report.data else None})
+        # Generate unique tracking code
+        tracking_code = generate_tracking_code()
+        max_attempts = 10
+        attempts = 0
+        
+        # Ensure tracking code is unique
+        while attempts < max_attempts:
+            existing = supabase.table('student_reports').select('tracking_code').eq('tracking_code', tracking_code).execute()
+            if not existing.data:
+                break
+            tracking_code = generate_tracking_code()
+            attempts += 1
+        
+        # Prepare report data
+        report_data = {
+            'student_id': user['id'],
+            'report_type': data.get('report_type', 'General'),
+            'category': data.get('category'),
+            'subject': data.get('subject', data.get('title', '')),
+            'description': data.get('description'),
+            'incident_location': data.get('incident_location'),
+            'incident_date': data.get('incident_date'),
+            'persons_involved': data.get('persons_involved'),
+            'tracking_code': tracking_code,
+            'status': 'Submitted',
+            'stage': 'Teacher Review',  # Automatically goes to teacher review
+            'priority': data.get('priority', 'Normal')
+        }
+        
+        # Add attachments if provided
+        if data.get('attachments'):
+            report_data['attachments'] = data.get('attachments')
+        
+        # Insert report
+        report = supabase.table('student_reports').insert(report_data).execute()
+        
+        if report.data:
+            return jsonify({
+                'success': True, 
+                'report': report.data[0],
+                'tracking_code': tracking_code
+            })
+        else:
+            return jsonify({'error': 'Failed to create report'}), 400
+            
     except Exception as e:
+        import traceback
+        print(f"Error submitting report: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
 
 @student_bp.route('/report-status')
@@ -65,8 +112,16 @@ def report_status():
     user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     try:
-        reports = supabase.table('reports').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        reports = supabase.table('student_reports').select('*').eq('student_id', user['id']).order('created_at', desc=True).execute()
         reports_data = reports.data if reports.data else []
+        
+        # Get counselor cases and recommendations for each report
+        for report in reports_data:
+            try:
+                counselor_case = supabase.table('counselor_cases').select('*').eq('report_id', report['id']).order('created_at', desc=True).limit(1).execute()
+                report['counselor_case'] = counselor_case.data[0] if counselor_case.data else None
+            except:
+                report['counselor_case'] = None
     except:
         reports_data = []
     return render_template('student/report_status.html', reports=reports_data)
@@ -74,16 +129,36 @@ def report_status():
 @student_bp.route('/request-counseling', methods=['GET', 'POST'])
 @require_auth(roles=['student'])
 def request_counseling():
-    if request.method == 'GET':
-        return render_template('student/request_counseling.html')
-    
     user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    
+    if request.method == 'GET':
+        # Get confirmed reports that allow counseling requests
+        try:
+            confirmed_reports = supabase.table('student_reports').select(
+                '*, counselor_cases!inner(status)'
+            ).eq('student_id', user['id']).eq('counselor_cases.status', 'Confirmed').execute()
+            confirmed_reports_data = confirmed_reports.data if confirmed_reports.data else []
+        except:
+            confirmed_reports_data = []
+        
+        return render_template('student/request_counseling.html', confirmed_reports=confirmed_reports_data)
+    
     data = request.get_json()
+    report_id = data.get('report_id')
+    
+    # Verify that the report is confirmed by counselor
+    try:
+        counselor_case = supabase.table('counselor_cases').select('*').eq('report_id', report_id).eq('status', 'Confirmed').single().execute()
+        if not counselor_case.data:
+            return jsonify({'error': 'This report must be confirmed by a counselor before requesting counseling'}), 400
+    except:
+        return jsonify({'error': 'Invalid report or report not confirmed'}), 400
     
     try:
-        supabase = current_app.supabase
         request_data = supabase.table('counseling_requests').insert({
             'user_id': user['id'],
+            'report_id': report_id,  # Link to the confirmed report
             'reason': data.get('reason'),
             'preferred_date': data.get('preferred_date'),
             'urgency': data.get('urgency', 'normal'),
@@ -92,6 +167,8 @@ def request_counseling():
         
         return jsonify({'success': True, 'request': request_data.data[0] if request_data.data else None})
     except Exception as e:
+        import traceback
+        print(f"Error creating counseling request: {str(e)}\n{traceback.format_exc()}")
         return jsonify({'error': str(e)}), 400
 
 @student_bp.route('/counseling-status')
@@ -100,7 +177,9 @@ def counseling_status():
     user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     try:
-        requests = supabase.table('counseling_requests').select('*').eq('user_id', user['id']).order('created_at', desc=True).execute()
+        requests = supabase.table('counseling_requests').select(
+            '*, student_reports(tracking_code, subject)'
+        ).eq('user_id', user['id']).order('created_at', desc=True).execute()
         requests_data = requests.data if requests.data else []
     except:
         requests_data = []

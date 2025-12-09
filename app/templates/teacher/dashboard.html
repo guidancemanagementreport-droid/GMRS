@@ -9,8 +9,39 @@
         <div class="dashboard-card">
             <h3><i class="fas fa-clipboard-list"></i> Student Reports Review</h3>
             <p>Review and manage student reports</p>
+            {% if pending_reports_count > 0 %}
+            <p style="color: var(--teacher-color); font-weight: 600; margin: 0.5rem 0;">
+                <i class="fas fa-exclamation-circle"></i> {{ pending_reports_count }} pending review{{ 's' if pending_reports_count != 1 else '' }}
+            </p>
+            {% endif %}
             <a href="{{ url_for('teacher.review_reports') }}" class="btn btn-primary">View Reports</a>
         </div>
+        
+        {% if reports %}
+        <div class="dashboard-card">
+            <h3><i class="fas fa-clock"></i> Recent Reports</h3>
+            <div style="margin-top: 1rem;">
+                {% for report in reports[:3] %}
+                <div style="padding: 0.75rem; background: #F9FAFB; border-radius: 6px; margin-bottom: 0.5rem;">
+                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.9rem;">
+                        {{ report.subject or 'No subject' }}
+                    </p>
+                    <p style="font-size: 0.8rem; color: #6B7280; margin-bottom: 0.25rem;">
+                        {% if report.users %}
+                            {{ (report.users.first_name or '') + ' ' + (report.users.last_name or '') }}
+                        {% else %}
+                            Unknown Student
+                        {% endif %}
+                    </p>
+                    <p style="font-size: 0.75rem; color: #9CA3AF;">
+                        {{ report.created_at[:10] if report.created_at else 'N/A' }}
+                    </p>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('teacher.review_reports') }}" class="btn btn-sm" style="margin-top: 0.5rem;">View All</a>
+        </div>
+        {% endif %}
         
         <div class="dashboard-card">
             <h3><i class="fas fa-exclamation-triangle"></i> Submit Incident Report</h3>

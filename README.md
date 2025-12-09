@@ -1,4 +1,4 @@
-# Guidance Management Reporting System (GMRS)
+ # Guidance Management Reporting System (GMRS)
 
 A comprehensive Flask-based web application for managing guidance office operations, student reports, counseling requests, and case management.
 

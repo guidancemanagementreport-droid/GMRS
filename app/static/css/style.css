@@ -518,6 +518,15 @@ h1, h2, h3, h4, h5, h6 {
     background: #D32F2F;
 }
 
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-success:hover {
+    background: #2BA87A;
+}
+
 /* Forms */
 .form-card, .auth-card {
     background: var(--white);

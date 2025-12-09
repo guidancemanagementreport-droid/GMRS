@@ -1,39 +1,169 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Case Records{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>Assigned Cases</h1>
-    </div>
-</div>
-
 <div class="container">
-    <div class="table-container">
+    <h1 style="margin-bottom: 1.5rem;">Case Records</h1>
+    
+    {% if cases %}
+    <div class="table-container" style="overflow-x: auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Case ID</th>
-                    <th>Student</th>
-                    <th>Report Title</th>
+                    <th>Tracking Code</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Report Type</th>
                     <th>Status</th>
-                    <th>Created</th>
+                    <th>Final Status</th>
+                    <th>Date Received</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for case in cases %}
                 <tr>
-                    <td>{{ case.id }}</td>
-                    <td>{{ case.users.full_name if case.users else 'N/A' }}</td>
-                    <td>{{ case.reports.title if case.reports else 'N/A' }}</td>
-                    <td><span class="status-badge status-{{ case.status }}">{{ case.status }}</span></td>
-                    <td>{{ case.created_at }}</td>
-                    <td><a href="{{ url_for('counselor.case_notes', case_id=case.id) }}" class="btn btn-sm">View Notes</a></td>
+                    <td><strong style="color: var(--counselor-color);">{{ case.tracking_code or 'N/A' }}</strong></td>
+                    <td>
+                        {% if case.users %}
+                            {{ (case.users.first_name or '') + ' ' + (case.users.last_name or '') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ case.subject or 'N/A' }}</td>
+                    <td>{{ case.report_type or 'N/A' }}</td>
+                    <td><span class="status-badge status-{{ case.status|lower|replace(' ', '-') }}">{{ case.status or 'N/A' }}</span></td>
+                    <td><span class="badge badge-final-status badge-{{ case.final_status|lower|replace(' ', '-') }}">{{ case.final_status or 'Pending' }}</span></td>
+                    <td>
+                        {% if case.created_at %}
+                            {{ case.created_at[:10] if case.created_at|length > 10 else case.created_at }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('counselor.review_case', report_id=case.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i> Review Case
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; color: #6B7280;">
+        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No cases assigned</p>
+        <p style="font-size: 0.9rem;">Cases forwarded by teachers will appear here.</p>
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.data-table thead {
+    background-color: #f8f9fa;
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4B5563;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-submitted {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge.status-under-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge.status-in-progress {
+    background-color: #FDE68A;
+    color: #78350F;
+}
+
+.status-badge.status-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge.status-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-final-status {
+    font-size: 0.75rem;
+}
+
+.badge-final-status.badge-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-final-status.badge-in-process {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-final-status.badge-waiting-for-counselor {
+    background-color: #FDE68A;
+    color: #78350F;
+}
+
+.badge-final-status.badge-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-final-status.badge-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+</style>
 {% endblock %}
 

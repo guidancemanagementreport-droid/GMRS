@@ -1,21 +1,24 @@
-{% extends "base.html" %}
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Student Reports Review{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div class="container">
-        <h1>Student Reports Review</h1>
-    </div>
-</div>
-
 <div class="container">
-    <div class="table-container">
+    <h1 style="margin-bottom: 1.5rem;">Student Reports Review</h1>
+    
+    {% if reports %}
+    <div class="table-container" style="overflow-x: auto;">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Title</th>
-                    <th>Student</th>
+                    <th>Tracking Code</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Report Type</th>
                     <th>Category</th>
                     <th>Status</th>
+                    <th>Stage</th>
+                    <th>Priority</th>
                     <th>Date Submitted</th>
                     <th>Actions</th>
                 </tr>
@@ -23,17 +26,173 @@
             <tbody>
                 {% for report in reports %}
                 <tr>
-                    <td>{{ report.title }}</td>
-                    <td>{{ report.users.full_name if report.users else 'N/A' }}</td>
-                    <td>{{ report.category }}</td>
-                    <td><span class="status-badge status-{{ report.status }}">{{ report.status }}</span></td>
-                    <td>{{ report.created_at }}</td>
-                    <td><a href="#" class="btn btn-sm">View Details</a></td>
+                    <td><strong style="color: var(--teacher-color);">{{ report.tracking_code or 'N/A' }}</strong></td>
+                    <td>
+                        {% if report.users %}
+                            {{ (report.users.first_name or '') + ' ' + (report.users.last_name or '') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>{{ report.subject or 'N/A' }}</td>
+                    <td>{{ report.report_type or 'N/A' }}</td>
+                    <td><span class="badge badge-info">{{ report.category|title if report.category else 'N/A' }}</span></td>
+                    <td><span class="status-badge status-{{ report.status|lower|replace(' ', '-') }}">{{ report.status or 'N/A' }}</span></td>
+                    <td><span class="badge badge-stage badge-{{ report.stage|lower|replace(' ', '-') }}">{{ report.stage or 'Teacher Review' }}</span></td>
+                    <td><span class="badge badge-priority badge-{{ report.priority|lower if report.priority else 'normal' }}">{{ report.priority or 'Normal' }}</span></td>
+                    <td>
+                        {% if report.created_at %}
+                            {{ report.created_at[:10] if report.created_at|length > 10 else report.created_at }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('teacher.review_report_detail', report_id=report.id) }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye"></i> View & Review
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem 1rem; color: #6B7280;">
+        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No reports pending review</p>
+        <p style="font-size: 0.9rem;">Student reports will appear here when submitted.</p>
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.data-table thead {
+    background-color: #f8f9fa;
+}
+
+.data-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.data-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4B5563;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-submitted {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge.status-under-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge.status-in-progress {
+    background-color: #FDE68A;
+    color: #78350F;
+}
+
+.status-badge.status-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge.status-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-info {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-stage {
+    font-size: 0.75rem;
+}
+
+.badge-stage.badge-teacher-review {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-stage.badge-counselor-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-stage.badge-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-stage.badge-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge-priority {
+    font-size: 0.75rem;
+}
+
+.badge-priority.badge-low {
+    background-color: #E0E7FF;
+    color: #3730A3;
+}
+
+.badge-priority.badge-normal {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-priority.badge-high {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-priority.badge-critical {
+    background-color: #FEE2E2;
+    color: #7F1D1D;
+    font-weight: 600;
+}
+</style>
 {% endblock %}
 

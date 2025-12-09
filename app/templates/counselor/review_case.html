@@ -1,0 +1,325 @@
+{% extends "dashboard_base.html" %}
+
+{% block page_title %}Review Case{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('counselor.case_record') }}" class="btn btn-sm" style="margin-bottom: 1rem;">
+        <i class="fas fa-arrow-left"></i> Back to Case Records
+    </a>
+    
+    {% if report %}
+    <div class="form-card" style="margin-bottom: 2rem;">
+        <h2>Student Report Details</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Tracking Code</label>
+                <p style="font-size: 1.125rem; font-weight: 600; color: var(--counselor-color);">{{ report.tracking_code or 'N/A' }}</p>
+            </div>
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Student Name</label>
+                <p style="font-size: 1.125rem;">
+                    {% if report.users %}
+                        {{ (report.users.first_name or '') + ' ' + (report.users.last_name or '') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Report Type</label>
+                <p style="font-size: 1.125rem;">{{ report.report_type or 'N/A' }}</p>
+            </div>
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Category</label>
+                <p style="font-size: 1.125rem;">{{ report.category|title if report.category else 'N/A' }}</p>
+            </div>
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Priority</label>
+                <p><span class="badge badge-priority badge-{{ report.priority|lower if report.priority else 'normal' }}">{{ report.priority or 'Normal' }}</span></p>
+            </div>
+            <div>
+                <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Date Submitted</label>
+                <p style="font-size: 1.125rem;">
+                    {% if report.created_at %}
+                        {{ report.created_at[:10] if report.created_at|length > 10 else report.created_at }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Subject</label>
+            <p style="font-size: 1.125rem; margin-top: 0.5rem;">{{ report.subject or 'N/A' }}</p>
+        </div>
+        
+        <div style="margin-top: 1.5rem;">
+            <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Description</label>
+            <p style="margin-top: 0.5rem; line-height: 1.6; color: #4B5563;">{{ report.description or 'N/A' }}</p>
+        </div>
+        
+        {% if report.incident_location %}
+        <div style="margin-top: 1.5rem;">
+            <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Incident Location</label>
+            <p style="margin-top: 0.5rem;">{{ report.incident_location }}</p>
+        </div>
+        {% endif %}
+        
+        {% if report.incident_date %}
+        <div style="margin-top: 1.5rem;">
+            <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Incident Date</label>
+            <p style="margin-top: 0.5rem;">{{ report.incident_date }}</p>
+        </div>
+        {% endif %}
+        
+        {% if report.persons_involved %}
+        <div style="margin-top: 1.5rem;">
+            <label style="font-weight: 600; color: #6B7280; font-size: 0.875rem;">Persons Involved</label>
+            <p style="margin-top: 0.5rem;">{{ report.persons_involved }}</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if teacher_review %}
+    <div class="form-card" style="margin-bottom: 2rem; background: #FEF3C7; border-left: 4px solid #F59E0B;">
+        <h3 style="color: #92400E; margin-bottom: 1rem;">
+            <i class="fas fa-chalkboard-teacher"></i> Teacher Review
+        </h3>
+        <div style="margin-top: 1rem;">
+            <p style="margin-bottom: 0.75rem;"><strong>Notes:</strong> {{ teacher_review.notes }}</p>
+            {% if teacher_review.action_taken %}
+            <p style="margin-bottom: 0.75rem;"><strong>Action Taken:</strong> {{ teacher_review.action_taken }}</p>
+            {% endif %}
+            {% if teacher_review.recommendation %}
+            <p style="margin-bottom: 0.75rem;"><strong>Recommendation:</strong> {{ teacher_review.recommendation }}</p>
+            {% endif %}
+            <p style="margin-bottom: 0; color: #6B7280; font-size: 0.875rem;">
+                <strong>Reviewed:</strong> {{ teacher_review.created_at[:10] if teacher_review.created_at else 'N/A' }}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="form-card">
+        <h2>Counselor Case Record</h2>
+        
+        {% if counselor_case %}
+        <div style="background: #F3F4F6; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="font-weight: 600; margin-bottom: 0.5rem;">Previous Case Record ({{ counselor_case.created_at[:10] if counselor_case.created_at else 'N/A' }})</p>
+            {% if counselor_case.summary %}
+            <p style="color: #4B5563; margin-bottom: 0.5rem;"><strong>Summary:</strong> {{ counselor_case.summary }}</p>
+            {% endif %}
+            <p style="color: #4B5563; margin-bottom: 0.5rem;"><strong>Notes:</strong> {{ counselor_case.counselor_notes }}</p>
+            {% if counselor_case.action_taken %}
+            <p style="color: #4B5563; margin-bottom: 0.5rem;"><strong>Action Taken:</strong> {{ counselor_case.action_taken }}</p>
+            {% endif %}
+            {% if counselor_case.recommendation %}
+            <p style="color: #4B5563; margin-bottom: 0.5rem;"><strong>Recommendation:</strong> {{ counselor_case.recommendation }}</p>
+            {% endif %}
+            <p style="margin-top: 0.5rem;"><span class="status-badge status-{{ counselor_case.status|lower|replace(' ', '-') }}">{{ counselor_case.status }}</span></p>
+        </div>
+        {% endif %}
+        
+        <form id="caseForm">
+            <div class="form-group">
+                <label for="summary">Summary:</label>
+                <input type="text" id="summary" name="summary" placeholder="Brief assessment summary..." value="{% if counselor_case %}{{ counselor_case.summary }}{% endif %}">
+            </div>
+            
+            <div class="form-group">
+                <label for="counselor_notes">Counselor Notes: <span style="color: red;">*</span></label>
+                <textarea id="counselor_notes" name="counselor_notes" rows="6" placeholder="Enter your case notes and assessment..." required>{% if counselor_case %}{{ counselor_case.counselor_notes }}{% endif %}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="action_taken">Action Taken:</label>
+                <textarea id="action_taken" name="action_taken" rows="3" placeholder="Describe actions taken regarding this case...">{% if counselor_case %}{{ counselor_case.action_taken }}{% endif %}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="recommendation">Recommendation:</label>
+                <textarea id="recommendation" name="recommendation" rows="3" placeholder="Final advice or guidance for the student...">{% if counselor_case %}{{ counselor_case.recommendation }}{% endif %}</textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="meeting_date">Meeting Date:</label>
+                    <input type="datetime-local" id="meeting_date" name="meeting_date" value="{% if counselor_case and counselor_case.meeting_date %}{{ counselor_case.meeting_date[:16] }}{% endif %}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="follow_up_date">Follow-up Date:</label>
+                    <input type="datetime-local" id="follow_up_date" name="follow_up_date" value="{% if counselor_case and counselor_case.follow_up_date %}{{ counselor_case.follow_up_date[:16] }}{% endif %}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Case Status: <span style="color: red;">*</span></label>
+                <select id="status" name="status" required>
+                    <option value="In Review" {% if counselor_case and counselor_case.status == 'In Review' %}selected{% endif %}>In Review</option>
+                    <option value="Processing" {% if counselor_case and counselor_case.status == 'Processing' %}selected{% endif %}>Processing</option>
+                    <option value="Pending Meeting" {% if counselor_case and counselor_case.status == 'Pending Meeting' %}selected{% endif %}>Pending Meeting</option>
+                    <option value="Confirmed" {% if counselor_case and counselor_case.status == 'Confirmed' %}selected{% endif %}>Confirmed (Allows Student to Request Counseling)</option>
+                    <option value="Returned" {% if counselor_case and counselor_case.status == 'Returned' %}selected{% endif %}>Returned / Not Valid</option>
+                    <option value="Resolved" {% if counselor_case and counselor_case.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="Settled" {% if counselor_case and counselor_case.status == 'Settled' %}selected{% endif %}>Settled (After Counseling Completed)</option>
+                    <option value="Closed" {% if counselor_case and counselor_case.status == 'Closed' %}selected{% endif %}>Closed</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i> Save Case Record
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <div class="form-card">
+        <p>Report not found.</p>
+        <a href="{{ url_for('counselor.case_record') }}" class="btn btn-primary">Back to Case Records</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.status-in-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.status-badge.status-processing {
+    background-color: #FDE68A;
+    color: #78350F;
+}
+
+.status-badge.status-pending-meeting {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-badge.status-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge.status-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-priority.badge-low {
+    background-color: #E0E7FF;
+    color: #3730A3;
+}
+
+.badge-priority.badge-normal {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-priority.badge-high {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-priority.badge-critical {
+    background-color: #FEE2E2;
+    color: #7F1D1D;
+    font-weight: 600;
+}
+</style>
+
+<script>
+document.getElementById('caseForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        summary: document.getElementById('summary').value || null,
+        counselor_notes: document.getElementById('counselor_notes').value,
+        action_taken: document.getElementById('action_taken').value || null,
+        recommendation: document.getElementById('recommendation').value || null,
+        meeting_date: document.getElementById('meeting_date').value || null,
+        follow_up_date: document.getElementById('follow_up_date').value || null,
+        status: document.getElementById('status').value
+    };
+    
+    try {
+        const response = await fetch('{{ url_for("counselor.review_case", report_id=report.id) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            const message = formData.status === 'Resolved' || formData.status === 'Closed'
+                ? 'Case record saved! Report has been marked as ' + formData.status.toLowerCase() + ' and will appear in student\'s report status.'
+                : 'Case record saved successfully!';
+            
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: message,
+                    duration: 4000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#34C38F",
+                }).showToast();
+                setTimeout(() => {
+                    window.location.replace('{{ url_for("counselor.case_record") }}');
+                }, 2000);
+            } else {
+                alert(message);
+                window.location.replace('{{ url_for("counselor.case_record") }}');
+            }
+        } else {
+            const errorMsg = data.error || 'Failed to save case record';
+            if (typeof Toastify === 'function') {
+                Toastify({
+                    text: errorMsg,
+                    duration: 5000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#F44336",
+                    close: true
+                }).showToast();
+            } else {
+                alert(errorMsg);
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        if (typeof Toastify === 'function') {
+            Toastify({
+                text: 'An error occurred. Please try again.',
+                duration: 5000,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "#F44336",
+                close: true
+            }).showToast();
+        } else {
+            alert('An error occurred. Please try again.');
+        }
+    }
+});
+</script>
+{% endblock %}
+

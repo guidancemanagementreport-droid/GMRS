@@ -6,9 +6,22 @@
 <div class="container">
     <div class="form-card">
         <h2>Request Counseling Session</h2>
-        <p class="text-muted">Submit a request for a counseling session. A counselor will review your request and get back to you.</p>
+        <p class="text-muted">You can only request counseling for reports that have been confirmed by a counselor.</p>
         
+        {% if confirmed_reports %}
         <form id="counselingForm">
+            <div class="form-group">
+                <label for="report_id">Select Confirmed Report *</label>
+                <select id="report_id" name="report_id" required>
+                    <option value="">Choose a confirmed report...</option>
+                    {% for report in confirmed_reports %}
+                    <option value="{{ report.id }}">
+                        {{ report.tracking_code }} - {{ report.subject or 'No subject' }} ({{ report.report_type }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
             <div class="form-group">
                 <label for="reason">Reason for Request *</label>
                 <textarea id="reason" name="reason" rows="5" required placeholder="Please describe the reason for your counseling request..."></textarea>
@@ -29,6 +42,14 @@
             <button type="submit" class="btn btn-primary">Submit Request</button>
             <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">Cancel</a>
         </form>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; background: #FEF3C7; border-radius: 8px; margin-top: 1rem;">
+            <i class="fas fa-info-circle" style="font-size: 2rem; color: #92400E; margin-bottom: 1rem;"></i>
+            <p style="color: #92400E; font-weight: 600; margin-bottom: 0.5rem;">No Confirmed Reports Available</p>
+            <p style="color: #78350F;">You need to have a report confirmed by a counselor before you can request counseling.</p>
+            <a href="{{ url_for('student.report_status') }}" class="btn btn-primary" style="margin-top: 1rem;">View Report Status</a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -36,6 +57,7 @@
 document.getElementById('counselingForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = {
+        report_id: document.getElementById('report_id').value,
         reason: document.getElementById('reason').value,
         preferred_date: document.getElementById('preferred_date').value,
         urgency: document.getElementById('urgency').value

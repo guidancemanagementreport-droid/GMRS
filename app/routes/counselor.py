@@ -9,9 +9,11 @@ def dashboard():
     user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     
-    # Get assigned cases
+    # Get assigned cases (reports in Counselor Review stage)
     try:
-        cases = supabase.table('cases').select('*, reports(*), users(first_name, last_name)').eq('counselor_id', user['id']).order('created_at', desc=True).execute()
+        cases = supabase.table('student_reports').select(
+            '*, users!student_reports_student_id_fkey(first_name, last_name)'
+        ).eq('stage', 'Counselor Review').order('created_at', desc=True).execute()
         cases_data = cases.data if cases.data else []
     except:
         cases_data = []
@@ -25,7 +27,7 @@ def dashboard():
     
     # Get statistics
     total_cases = len(cases_data)
-    active_cases = len([c for c in cases_data if c.get('status') == 'active'])
+    active_cases = len([c for c in cases_data if c.get('final_status') in ('Pending', 'In Process', 'Waiting for Counselor')])
     
     return render_template('counselor/dashboard.html',
                          cases=cases_data,
@@ -39,11 +41,31 @@ def case_record():
     user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     try:
-        cases = supabase.table('cases').select('*, reports(*), users(first_name, last_name)').eq('counselor_id', user['id']).execute()
-        cases_data = cases.data if cases.data else []
-    except:
-        cases_data = []
-    return render_template('counselor/cases.html', cases=cases_data)
+        # Get all student reports in Counselor Review stage (forwarded by teachers)
+        reports = supabase.table('student_reports').select(
+            '*, users!student_reports_student_id_fkey(first_name, last_name, email, user_id), counselor_cases(*)'
+        ).eq('stage', 'Counselor Review').order('created_at', desc=True).execute()
+        reports_data = reports.data if reports.data else []
+        
+        # Get existing counselor cases for these reports
+        for report in reports_data:
+            try:
+                case = supabase.table('counselor_cases').select('*').eq('report_id', report['id']).eq('counselor_id', user['id']).order('created_at', desc=True).limit(1).execute()
+                report['counselor_case'] = case.data[0] if case.data else None
+            except:
+                report['counselor_case'] = None
+            
+            # Get teacher review if exists
+            try:
+                teacher_review = supabase.table('teacher_reviews').select('*').eq('report_id', report['id']).order('created_at', desc=True).limit(1).execute()
+                report['teacher_review'] = teacher_review.data[0] if teacher_review.data else None
+            except:
+                report['teacher_review'] = None
+    except Exception as e:
+        import traceback
+        print(f"Error fetching case records: {str(e)}\n{traceback.format_exc()}")
+        reports_data = []
+    return render_template('counselor/cases.html', cases=reports_data)
 
 @counselor_bp.route('/cases')
 @require_auth(roles=['counselor'])
@@ -62,6 +84,76 @@ def notifications():
     except:
         notifications_data = []
     return render_template('counselor/notifications.html', notifications=notifications_data)
+
+@counselor_bp.route('/case-record/<report_id>/review', methods=['GET', 'POST'])
+@require_auth(roles=['counselor'])
+def review_case(report_id):
+    user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    
+    if request.method == 'GET':
+        try:
+            # Get the student report with student info
+            report = supabase.table('student_reports').select(
+                '*, users!student_reports_student_id_fkey(first_name, last_name, email, user_id)'
+            ).eq('id', report_id).single().execute()
+            report_data = report.data if report.data else None
+            
+            # Get teacher review if exists
+            try:
+                teacher_review = supabase.table('teacher_reviews').select('*').eq('report_id', report_id).order('created_at', desc=True).limit(1).execute()
+                teacher_review_data = teacher_review.data[0] if teacher_review.data else None
+            except:
+                teacher_review_data = None
+            
+            # Get existing counselor case if any
+            try:
+                counselor_case = supabase.table('counselor_cases').select('*').eq('report_id', report_id).eq('counselor_id', user['id']).order('created_at', desc=True).limit(1).execute()
+                counselor_case_data = counselor_case.data[0] if counselor_case.data else None
+            except:
+                counselor_case_data = None
+            
+            return render_template('counselor/review_case.html', 
+                                 report=report_data,
+                                 teacher_review=teacher_review_data,
+                                 counselor_case=counselor_case_data)
+        except Exception as e:
+            import traceback
+            print(f"Error fetching case: {str(e)}\n{traceback.format_exc()}")
+            return redirect(url_for('counselor.case_record'))
+    
+    # POST - Submit/Update counselor case
+    data = request.get_json()
+    user = get_current_user()
+    
+    try:
+        # Check if case already exists
+        existing_case = supabase.table('counselor_cases').select('id').eq('report_id', report_id).eq('counselor_id', user['id']).execute()
+        
+        case_data = {
+            'report_id': report_id,
+            'counselor_id': user['id'],
+            'summary': data.get('summary'),
+            'counselor_notes': data.get('counselor_notes', ''),
+            'action_taken': data.get('action_taken'),
+            'recommendation': data.get('recommendation'),
+            'meeting_date': data.get('meeting_date'),
+            'follow_up_date': data.get('follow_up_date'),
+            'status': data.get('status', 'In Review')
+        }
+        
+        if existing_case.data:
+            # Update existing case
+            result = supabase.table('counselor_cases').update(case_data).eq('id', existing_case.data[0]['id']).execute()
+        else:
+            # Create new case
+            result = supabase.table('counselor_cases').insert(case_data).execute()
+        
+        return jsonify({'success': True, 'message': 'Case record updated successfully'})
+    except Exception as e:
+        import traceback
+        print(f"Error submitting case: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 400
 
 @counselor_bp.route('/case/<case_id>/notes', methods=['GET', 'POST'])
 @require_auth(roles=['counselor'])
@@ -103,22 +195,114 @@ def case_notes(case_id):
 @counselor_bp.route('/student-history/<student_id>')
 @require_auth(roles=['counselor'])
 def student_history(student_id):
+    user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     try:
-        cases = supabase.table('cases').select('*, reports(*)').eq('student_id', student_id).execute()
-        cases_data = cases.data if cases.data else []
+        # Get student reports with counselor cases
+        reports = supabase.table('student_reports').select(
+            '*, counselor_cases!inner(*), users!student_reports_student_id_fkey(first_name, last_name)'
+        ).eq('student_id', student_id).execute()
+        cases_data = reports.data if reports.data else []
     except:
         cases_data = []
     
+    # Get counseling requests for this student
     try:
-        notes = supabase.table('case_notes').select('*').eq('student_id', student_id).order('created_at', desc=True).execute()
-        notes_data = notes.data if notes.data else []
+        counseling_requests = supabase.table('counseling_requests').select(
+            '*, student_reports(tracking_code, subject)'
+        ).eq('user_id', student_id).order('created_at', desc=True).execute()
+        counseling_requests_data = counseling_requests.data if counseling_requests.data else []
     except:
-        notes_data = []
+        counseling_requests_data = []
     
     return render_template('counselor/student_history.html',
                          cases=cases_data,
-                         notes=notes_data)
+                         counseling_requests=counseling_requests_data,
+                         student_id=student_id)
+
+@counselor_bp.route('/counseling-requests', methods=['GET', 'POST'])
+@require_auth(roles=['counselor'])
+def counseling_requests():
+    user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    
+    if request.method == 'GET':
+        try:
+            # Get all pending counseling requests
+            requests = supabase.table('counseling_requests').select(
+                '*, users!counseling_requests_user_id_fkey(first_name, last_name, user_id), student_reports(tracking_code, subject)'
+            ).eq('status', 'pending').order('created_at', desc=True).execute()
+            requests_data = requests.data if requests.data else []
+        except Exception as e:
+            import traceback
+            print(f"Error fetching counseling requests: {str(e)}\n{traceback.format_exc()}")
+            requests_data = []
+        
+        return render_template('counselor/counseling_requests.html', requests=requests_data)
+    
+    # POST - Update counseling request status
+    data = request.get_json()
+    request_id = data.get('request_id')
+    action = data.get('action')  # approve, reschedule, reject
+    
+    try:
+        if action == 'approve':
+            update_data = {
+                'status': 'approved',
+                'scheduled_date': data.get('scheduled_date')
+            }
+        elif action == 'reschedule':
+            update_data = {
+                'status': 'rescheduled',
+                'scheduled_date': data.get('scheduled_date')
+            }
+        elif action == 'reject':
+            update_data = {
+                'status': 'rejected'
+            }
+        else:
+            return jsonify({'error': 'Invalid action'}), 400
+        
+        result = supabase.table('counseling_requests').update(update_data).eq('id', request_id).execute()
+        
+        return jsonify({'success': True, 'message': f'Counseling request {action}d successfully'})
+    except Exception as e:
+        import traceback
+        print(f"Error updating counseling request: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 400
+
+@counselor_bp.route('/counseling-requests/<request_id>/complete', methods=['POST'])
+@require_auth(roles=['counselor'])
+def complete_counseling(request_id):
+    user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    
+    data = request.get_json()
+    
+    try:
+        # Get the counseling request
+        counseling_request = supabase.table('counseling_requests').select('*').eq('id', request_id).single().execute()
+        if not counseling_request.data:
+            return jsonify({'error': 'Counseling request not found'}), 404
+        
+        report_id = counseling_request.data.get('report_id')
+        
+        # Mark counseling as completed
+        supabase.table('counseling_requests').update({
+            'status': 'completed'
+        }).eq('id', request_id).execute()
+        
+        # If report_id exists, settle the report
+        if report_id:
+            supabase.table('counselor_cases').update({
+                'status': 'Settled'
+            }).eq('report_id', report_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Counseling session completed and report settled'})
+    except Exception as e:
+        import traceback
+        print(f"Error completing counseling: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 400
 
 @counselor_bp.route('/analytics')
 @require_auth(roles=['counselor'])

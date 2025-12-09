@@ -64,7 +64,7 @@ def dashboard():
 @admin_bp.route('/users')
 @require_auth(roles=['admin'])
 def manage_users():
-    supabase = current_app.supabase
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     users = supabase.table('users').select('*').order('created_at', desc=True).execute()
     return render_template('admin/users.html', users=users.data if users.data else [])
 

@@ -11,18 +11,29 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Category</th>
+                        <th>Tracking Code</th>
+                        <th>Subject</th>
+                        <th>Report Type</th>
+                        <th>Stage</th>
                         <th>Status</th>
+                        <th>Final Status</th>
                         <th>Date Submitted</th>
+                        <th>Details</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for report in reports %}
                     <tr>
-                        <td>{{ report.title }}</td>
-                        <td><span class="badge badge-info">{{ report.category|title }}</span></td>
-                        <td><span class="status-badge status-{{ report.status|replace('_', '-') }}">{{ report.status|replace('_', ' ')|title }}</span></td>
+                        <td><strong style="color: var(--student-color);">{{ report.tracking_code or 'N/A' }}</strong></td>
+                        <td>{{ report.subject or 'N/A' }}</td>
+                        <td>{{ report.report_type or 'N/A' }}</td>
+                        <td><span class="badge badge-stage badge-{{ report.stage|lower|replace(' ', '-') if report.stage else 'teacher-review' }}">{{ report.stage or 'Teacher Review' }}</span></td>
+                        <td><span class="status-badge status-{{ report.status|lower|replace(' ', '-') }}">{{ report.status or 'N/A' }}</span></td>
+                        <td>
+                            <span class="badge badge-final-status badge-{{ report.final_status|lower|replace(' ', '-') if report.final_status else 'pending' }}">
+                                {{ report.final_status or 'Pending' }}
+                            </span>
+                        </td>
                         <td>
                             {% if report.created_at %}
                                 {{ report.created_at[:10] if report.created_at|length > 10 else report.created_at }}
@@ -30,7 +41,39 @@
                                 N/A
                             {% endif %}
                         </td>
+                        <td>
+                            {% if report.counselor_case %}
+                                <button class="btn btn-sm" onclick="showDetails('{{ report.id }}')">
+                                    <i class="fas fa-info-circle"></i> View Details
+                                </button>
+                            {% else %}
+                                <span style="color: #9CA3AF; font-size: 0.875rem;">In Progress</span>
+                            {% endif %}
+                        </td>
                     </tr>
+                    {% if report.counselor_case %}
+                    <tr id="details-{{ report.id }}" style="display: none; background-color: #F9FAFB;">
+                        <td colspan="8" style="padding: 1.5rem;">
+                            <div style="border-left: 3px solid var(--student-color); padding-left: 1rem;">
+                                <h4 style="margin-bottom: 1rem; color: #374151;">Case Resolution Details</h4>
+                                {% if report.counselor_case.recommendation %}
+                                <p style="margin-bottom: 0.75rem;"><strong>Counselor Recommendation:</strong> {{ report.counselor_case.recommendation }}</p>
+                                {% endif %}
+                                {% if report.counselor_case.counselor_notes %}
+                                <p style="margin-bottom: 0.75rem;"><strong>Notes:</strong> {{ report.counselor_case.counselor_notes }}</p>
+                                {% endif %}
+                                {% if report.counselor_case.action_taken %}
+                                <p style="margin-bottom: 0.75rem;"><strong>Actions Taken:</strong> {{ report.counselor_case.action_taken }}</p>
+                                {% endif %}
+                                {% if report.counselor_case.updated_at %}
+                                <p style="margin-bottom: 0; color: #6B7280; font-size: 0.875rem;">
+                                    <strong>Resolved:</strong> {{ report.counselor_case.updated_at[:10] if report.counselor_case.updated_at|length > 10 else report.counselor_case.updated_at }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
@@ -83,14 +126,19 @@
     font-weight: 500;
 }
 
-.status-badge.status-pending {
+.status-badge.status-submitted {
     background-color: #FEF3C7;
     color: #92400E;
 }
 
-.status-badge.status-in-review {
+.status-badge.status-under-review {
     background-color: #DBEAFE;
     color: #1E40AF;
+}
+
+.status-badge.status-in-progress {
+    background-color: #FDE68A;
+    color: #78350F;
 }
 
 .status-badge.status-resolved {
@@ -101,6 +149,31 @@
 .status-badge.status-closed {
     background-color: #E5E7EB;
     color: #374151;
+}
+
+.badge-priority {
+    font-size: 0.75rem;
+}
+
+.badge-priority.badge-low {
+    background-color: #E0E7FF;
+    color: #3730A3;
+}
+
+.badge-priority.badge-normal {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-priority.badge-high {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.badge-priority.badge-critical {
+    background-color: #FEE2E2;
+    color: #7F1D1D;
+    font-weight: 600;
 }
 
 .badge {
@@ -115,6 +188,72 @@
     background-color: #DBEAFE;
     color: #1E40AF;
 }
+
+.badge-stage {
+    font-size: 0.75rem;
+}
+
+.badge-stage.badge-teacher-review {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-stage.badge-counselor-review {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-stage.badge-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-stage.badge-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
+
+.badge-final-status {
+    font-size: 0.75rem;
+}
+
+.badge-final-status.badge-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-final-status.badge-in-process {
+    background-color: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-final-status.badge-waiting-for-counselor {
+    background-color: #FDE68A;
+    color: #78350F;
+}
+
+.badge-final-status.badge-resolved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-final-status.badge-closed {
+    background-color: #E5E7EB;
+    color: #374151;
+}
 </style>
+
+<script>
+function showDetails(reportId) {
+    const detailsRow = document.getElementById('details-' + reportId);
+    if (detailsRow) {
+        if (detailsRow.style.display === 'none') {
+            detailsRow.style.display = 'table-row';
+        } else {
+            detailsRow.style.display = 'none';
+        }
+    }
+}
+</script>
 {% endblock %}
 

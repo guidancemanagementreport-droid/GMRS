@@ -89,7 +89,11 @@
                     <i class="fas fa-briefcase"></i>
                     <span>Case Records</span>
                 </a>
-                <a href="{{ url_for('counselor.case_record') }}" class="sidebar-link">
+                <a href="{{ url_for('counselor.counseling_requests') }}" class="sidebar-link">
+                    <i class="fas fa-comments"></i>
+                    <span>Counseling Requests</span>
+                </a>
+                <a href="{{ url_for('counselor.student_history', student_id='all') }}" class="sidebar-link">
                     <i class="fas fa-history"></i>
                     <span>Student History</span>
                 </a>

@@ -26,14 +26,18 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user.full_name }}</td>
-                    <td>{{ user.email }}</td>
+                    <td>{{ (user.first_name or '') + ' ' + (user.last_name or '') if user.first_name or user.last_name else 'N/A' }}</td>
+                    <td>{{ user.email or 'N/A' }}</td>
                     <td>{{ user.role }}</td>
                     <td><span class="status-badge status-{{ 'active' if user.is_active else 'inactive' }}">{{ 'Active' if user.is_active else 'Inactive' }}</span></td>
                     <td>{{ user.created_at }}</td>
                     <td>
                         <button class="btn btn-sm" onclick="editUser('{{ user.id }}')">Edit</button>
-                        <button class="btn btn-sm btn-danger" onclick="deactivateUser('{{ user.id }}')">Deactivate</button>
+                        {% if user.is_active %}
+                        <button class="btn btn-sm btn-danger" onclick="toggleUserStatus('{{ user.id }}', false)">Deactivate</button>
+                        {% else %}
+                        <button class="btn btn-sm btn-success" onclick="toggleUserStatus('{{ user.id }}', true)">Activate</button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -89,21 +93,28 @@ async function editUser(userId) {
     }
 }
 
-async function deactivateUser(userId) {
-    if (confirm('Are you sure you want to deactivate this user?')) {
+async function toggleUserStatus(userId, activate) {
+    const action = activate ? 'activate' : 'deactivate';
+    const message = activate ? 'Are you sure you want to activate this user?' : 'Are you sure you want to deactivate this user?';
+    
+    if (confirm(message)) {
         try {
             const response = await fetch('/admin/users/' + userId, {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'}
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    is_active: activate
+                })
             });
             
             const data = await response.json();
             if (data.success) {
+                const successMessage = activate ? 'User activated successfully!' : 'User deactivated successfully!';
                 if (typeof showToast === 'function') {
-                    showToast('User deactivated successfully!', 'success');
+                    showToast(successMessage, 'success');
                 } else {
                     Toastify({
-                        text: 'User deactivated successfully!',
+                        text: successMessage,
                         duration: 3000,
                         gravity: "top",
                         position: "right",
@@ -115,6 +126,14 @@ async function deactivateUser(userId) {
         } catch (error) {
             if (typeof showToast === 'function') {
                 showToast('An error occurred', 'error');
+            } else {
+                Toastify({
+                    text: 'An error occurred',
+                    duration: 3000,
+                    gravity: "top",
+                    position: "right",
+                    backgroundColor: "#F46A6A",
+                }).showToast();
             }
         }
     }

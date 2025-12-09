@@ -9,8 +9,19 @@ def dashboard():
     user = get_current_user()
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     
+    # Get pending reports count (reports in Teacher Review stage)
+    pending_reports_count = 0
     try:
-        reports = supabase.table('reports').select('*, users(first_name, last_name, email)').order('created_at', desc=True).limit(20).execute()
+        pending_reports = supabase.table('student_reports').select('id', count='exact').eq('stage', 'Teacher Review').execute()
+        pending_reports_count = pending_reports.count if hasattr(pending_reports, 'count') else len(pending_reports.data) if pending_reports.data else 0
+    except:
+        pending_reports_count = 0
+    
+    # Get recent reports for display
+    try:
+        reports = supabase.table('student_reports').select(
+            '*, users!student_reports_student_id_fkey(first_name, last_name)'
+        ).eq('stage', 'Teacher Review').order('created_at', desc=True).limit(5).execute()
         reports_data = reports.data if reports.data else []
     except:
         reports_data = []
@@ -22,6 +33,7 @@ def dashboard():
         notifications_data = []
     
     return render_template('teacher/dashboard.html',
+                         pending_reports_count=pending_reports_count,
                          reports=reports_data,
                          notifications=notifications_data)
 
@@ -30,9 +42,22 @@ def dashboard():
 def review_reports():
     supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
     try:
-        reports = supabase.table('reports').select('*, users(first_name, last_name, email)').execute()
+        # Get all student reports that are in Teacher Review stage
+        reports = supabase.table('student_reports').select(
+            '*, users!student_reports_student_id_fkey(first_name, last_name, email, user_id)'
+        ).eq('stage', 'Teacher Review').order('created_at', desc=True).execute()
         reports_data = reports.data if reports.data else []
-    except:
+        
+        # Get existing teacher reviews for these reports
+        for report in reports_data:
+            try:
+                review = supabase.table('teacher_reviews').select('*').eq('report_id', report['id']).order('created_at', desc=True).limit(1).execute()
+                report['teacher_review'] = review.data[0] if review.data else None
+            except:
+                report['teacher_review'] = None
+    except Exception as e:
+        import traceback
+        print(f"Error fetching reports: {str(e)}\n{traceback.format_exc()}")
         reports_data = []
     return render_template('teacher/reports.html', reports=reports_data)
 
@@ -90,6 +115,78 @@ def monitor_case_program():
 def monitor_cases():
     # Redirect to monitor-case-program for consistency
     return redirect(url_for('teacher.monitor_case_program'))
+
+@teacher_bp.route('/reports/<report_id>/review', methods=['GET', 'POST'])
+@require_auth(roles=['teacher'])
+def review_report_detail(report_id):
+    user = get_current_user()
+    supabase = getattr(current_app, 'supabase_admin', None) or current_app.supabase
+    
+    if request.method == 'GET':
+        try:
+            # Get the report with student info
+            report = supabase.table('student_reports').select(
+                '*, users!student_reports_student_id_fkey(first_name, last_name, email, user_id)'
+            ).eq('id', report_id).single().execute()
+            report_data = report.data if report.data else None
+            
+            # Get existing teacher review if any
+            try:
+                review = supabase.table('teacher_reviews').select('*').eq('report_id', report_id).eq('teacher_id', user['id']).order('created_at', desc=True).limit(1).execute()
+                review_data = review.data[0] if review.data else None
+            except:
+                review_data = None
+            
+            return render_template('teacher/review_report.html', 
+                                 report=report_data, 
+                                 review=review_data)
+        except Exception as e:
+            import traceback
+            print(f"Error fetching report: {str(e)}\n{traceback.format_exc()}")
+            return redirect(url_for('teacher.review_reports'))
+    
+    # POST - Submit review
+    data = request.get_json()
+    user = get_current_user()
+    
+    try:
+        # Check if review already exists
+        existing_review = supabase.table('teacher_reviews').select('id').eq('report_id', report_id).eq('teacher_id', user['id']).execute()
+        
+        review_data = {
+            'report_id': report_id,
+            'teacher_id': user['id'],
+            'notes': data.get('notes', ''),
+            'action_taken': data.get('action_taken'),
+            'recommendation': data.get('recommendation'),
+            'status': data.get('status', 'Reviewed')
+        }
+        
+        if existing_review.data:
+            # Update existing review
+            result = supabase.table('teacher_reviews').update(review_data).eq('id', existing_review.data[0]['id']).execute()
+        else:
+            # Create new review
+            result = supabase.table('teacher_reviews').insert(review_data).execute()
+        
+        # If forwarding to counselor, update the report status
+        if data.get('status') == 'Forwarded to Counselor':
+            supabase.table('student_reports').update({
+                'stage': 'Counselor Review',
+                'status': 'Under Review'
+            }).eq('id', report_id).execute()
+        else:
+            # Update report status based on teacher review
+            supabase.table('student_reports').update({
+                'status': 'Under Review',
+                'teacher_id': user['id']
+            }).eq('id', report_id).execute()
+        
+        return jsonify({'success': True, 'message': 'Review submitted successfully'})
+    except Exception as e:
+        import traceback
+        print(f"Error submitting review: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({'error': str(e)}), 400
 
 @teacher_bp.route('/profile', methods=['GET', 'POST'])
 @require_auth(roles=['teacher'])

@@ -11,8 +11,10 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th>Report</th>
                         <th>Reason</th>
                         <th>Preferred Date</th>
+                        <th>Scheduled Date</th>
                         <th>Urgency</th>
                         <th>Status</th>
                         <th>Date Requested</th>
@@ -21,10 +23,24 @@
                 <tbody>
                     {% for request in requests %}
                     <tr>
+                        <td>
+                            {% if request.student_reports %}
+                                <strong>{{ request.student_reports.tracking_code or 'N/A' }}</strong>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
                         <td>{{ request.reason[:50] }}{% if request.reason|length > 50 %}...{% endif %}</td>
                         <td>{{ request.preferred_date or 'N/A' }}</td>
+                        <td>
+                            {% if request.scheduled_date %}
+                                {{ request.scheduled_date[:16] if request.scheduled_date|length > 16 else request.scheduled_date }}
+                            {% else %}
+                                <span style="color: #9CA3AF;">Not scheduled</span>
+                            {% endif %}
+                        </td>
                         <td><span class="urgency-badge urgency-{{ request.urgency }}">{{ request.urgency|title }}</span></td>
-                        <td><span class="status-badge status-{{ request.status|replace('_', '-') }}">{{ request.status|replace('_', ' ')|title }}</span></td>
+                        <td><span class="status-badge status-{{ request.status|lower|replace('_', '-') }}">{{ request.status|title }}</span></td>
                         <td>
                             {% if request.created_at %}
                                 {{ request.created_at[:10] if request.created_at|length > 10 else request.created_at }}
@@ -90,9 +106,19 @@
     color: #92400E;
 }
 
-.status-badge.status-scheduled {
+.status-badge.status-approved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-badge.status-rescheduled {
     background-color: #DBEAFE;
     color: #1E40AF;
+}
+
+.status-badge.status-rejected {
+    background-color: #FEE2E2;
+    color: #991B1B;
 }
 
 .status-badge.status-completed {
