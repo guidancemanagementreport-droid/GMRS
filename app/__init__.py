@@ -11,10 +11,11 @@ def create_app():
                 static_folder=static_folder, 
                 static_url_path='/static',
                 template_folder='templates')
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    app.config['SUPABASE_URL'] = os.environ.get('SUPABASE_URL', 'https://wnbmaltublivkfiwzltq.supabase.co')
-    app.config['SUPABASE_KEY'] = os.environ.get('SUPABASE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduYm1hbHR1YmxpdmtmaXd6bHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MDY1OTIsImV4cCI6MjA4MDM4MjU5Mn0.BtBp9gRhWO9Jxkmnn1fMy6M4z_A2i3xZpjd76jHV0ms')
-    app.config['SUPABASE_SERVICE_KEY'] = os.environ.get('SUPABASE_SERVICE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduYm1hbHR1YmxpdmtmaXd6bHRxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDgwNjU5MiwiZXhwIjoyMDgwMzgyNTkyfQ.jWgH5p2GIergl3LQUmUyVJcE0uouHymXNwTVBFsW0cU')  # Service role key for admin operations
+    # Require env vars in production; no defaults to avoid wrong project/keys
+    app.config['SECRET_KEY'] = os.environ['super-secret-key-1234567890']
+    app.config['SUPABASE_URL'] = os.environ['https://wnbmaltublivkfiwzltq.supabase.co']
+    app.config['SUPABASE_KEY'] = os.environ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduYm1hbHR1YmxpdmtmaXd6bHRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ4MDY1OTIsImV4cCI6MjA4MDM4MjU5Mn0.BtBp9gRhWO9Jxkmnn1fMy6M4z_A2i3xZpjd76jHV0ms']
+    app.config['SUPABASE_SERVICE_KEY'] = os.environ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduYm1hbHR1YmxpdmtmaXd6bHRxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDgwNjU5MiwiZXhwIjoyMDgwMzgyNTkyfQ.jWgH5p2GIergl3LQUmUyVJcE0uouHymXNwTVBFsW0cU']  # Service role key for admin operations
     
     # Initialize Supabase client (anon key for regular operations)
     try:
